@@ -1,42 +1,6 @@
-# sv
+# Gov-vote
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Description
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv create --template minimal --types ts --add prettier vitest="usages:unit,component" tailwindcss="plugins:forms,typography" drizzle="database:postgresql+postgresql:neon" sveltekit-adapter="adapter:vercel" --install npm gov-vote
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+A simple voting system for government elections. This project is designed to provide a secure and transparent way for citizens to cast their votes online.
+It allows electoral authorities to manage elections, candidates, and voters efficiently while ensuring the integrity of the voting process.
