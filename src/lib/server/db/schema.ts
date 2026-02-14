@@ -1,9 +1,15 @@
 import { pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
-export const roleEnum = pgEnum('role', ['admin', 'voter']);
-
+export const roleEnum = pgEnum('role', ['admin', 'voter', 'super_admin']);
+export const contestItemTypeEnum = pgEnum('contest_item_type', [
+	'candidate',
+	'initiative',
+	'other'
+]);
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
+	username: text('username').notNull().unique(),
+	hashedPassword: text('hashed_password').notNull(),
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
 	role: roleEnum().notNull().default('voter'),
@@ -73,6 +79,7 @@ export const contestItem = pgTable('contest_item', {
 		.references(() => contest.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
 	auxiliaryText: text('auxiliary_text').notNull(),
+	contestItemType: contestItemTypeEnum().notNull(),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
@@ -110,6 +117,19 @@ export const voterEligibility = pgTable('voter_eligibility', {
 		.references(() => pollingStation.id, { onDelete: 'cascade' }),
 	isEligible: text('is_eligible').notNull(),
 	isComplete: text('is_complete').notNull(),
+	createdAt: timestamp('created_at').notNull().defaultNow(),
+	updatedAt: timestamp('updated_at').notNull().defaultNow()
+});
+
+// Keep a table that tracks which contests an admin is responsible for managing (1 to many relationship)
+export const adminContest = pgTable('admin_contest', {
+	id: text('id').primaryKey(),
+	adminId: text('admin_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	contestId: text('contest_id')
+		.notNull()
+		.references(() => contest.id, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
