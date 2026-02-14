@@ -21,12 +21,13 @@
 		try {
 			const { error } = await signIn('credentials', { redirect: false, username, password });
 			if (error) {
-				requestError = error;
+				requestError = 'Invalid username or password. Please try again.';
 				return;
 			}
 			goto('/admin/dashboard');
 		} catch (err) {
-			requestError = err instanceof Error ? err.message : 'Login failed. Please try again.';
+			requestError =
+				err instanceof Error ? err.message : 'Server error: Login failed. Please try again.';
 		} finally {
 			isLoading = false;
 		}
