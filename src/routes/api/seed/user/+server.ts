@@ -2,6 +2,7 @@ import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
 import { json } from '@sveltejs/kit';
+import bcrypt from 'bcrypt';
 import type { RequestHandler } from './$types';
 
 /**
@@ -53,13 +54,20 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Generate unique IDs for users
 		const adminId = crypto.randomUUID();
+		const superAdminId = crypto.randomUUID();
 		const voterId = crypto.randomUUID();
+
+		const adminPassword = bcrypt.hashSync('adminpassword', 10); // Hash the admin password
+		const voterPassword = bcrypt.hashSync('voterpassword', 10); // Hash the voter password
+		const superAdminPassword = bcrypt.hashSync('superadminpassword', 10); // Hash the super admin password
 
 		// Create admin user
 		const adminUser = await db
 			.insert(user)
 			.values({
 				id: adminId,
+				username: 'admin',
+				hashedPassword: adminPassword,
 				firstName: 'Admin',
 				lastName: 'User',
 				role: 'admin'
@@ -71,18 +79,34 @@ export const POST: RequestHandler = async ({ request }) => {
 			.insert(user)
 			.values({
 				id: voterId,
+				username: 'voter',
+				hashedPassword: voterPassword,
 				firstName: 'Sample',
 				lastName: 'Voter',
 				role: 'voter'
 			})
 			.returning();
 
+		// Create super admin user
+		const superAdminUser = await db
+			.insert(user)
+			.values({
+				id: superAdminId,
+				username: 'superadmin',
+				hashedPassword: superAdminPassword,
+				firstName: 'Super',
+				lastName: 'Admin',
+				role: 'super_admin'
+			})
+			.returning();
+
 		return json(
 			{
 				success: true,
-				message: 'Successfully seeded admin and voter users',
+				message: 'Successfully seeded admin, super admin, and voter users',
 				data: {
 					admin: adminUser[0],
+					superAdmin: superAdminUser[0],
 					voter: voterUser[0]
 				}
 			},
