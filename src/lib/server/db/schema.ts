@@ -1,6 +1,6 @@
 import { pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
-const roleEnum = pgEnum('role', ['admin', 'voter']);
+export const roleEnum = pgEnum('role', ['admin', 'voter']);
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -99,7 +99,7 @@ export const pollingStation = pgTable('polling_station', {
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
-// TBD: Fix this to determine elibility based on address and polling station and date ranges
+// TBD: Fix this to determine eligibility based on address and polling station and date ranges
 export const voterEligibility = pgTable('voter_eligibility', {
 	id: text('id').primaryKey(),
 	userId: text('user_id')
