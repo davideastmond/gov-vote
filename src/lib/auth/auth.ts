@@ -69,7 +69,6 @@ export const { signIn, signOut, handle } = SvelteKitAuth({
 			return token;
 		},
 		session: async ({ session, token }) => {
-			console.log('session callback', { session, token });
 			session = {
 				...session,
 				user: {
