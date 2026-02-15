@@ -9,6 +9,7 @@ export const contestItemTypeEnum = pgEnum('contest_item_type', [
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
 	username: text('username').notNull().unique(),
+	email: text('email').notNull().unique(),
 	hashedPassword: text('hashed_password').notNull(),
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
@@ -63,8 +64,23 @@ export const contestPollingStation = pgTable('contest_polling_station', {
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
+/* A contest group is a way to group multiple contests together, e.g. "2024 General Election" 
+where voters can participate in multiple contests (e.g. "President", "Senate", "House of Representatives") that are all part of the same contest group.
+*/
+export const contestGroup = pgTable('contest_group', {
+	id: text('id').primaryKey(),
+	title: text('title').notNull(),
+	description: text('description'),
+	createdAt: timestamp('created_at').notNull().defaultNow(),
+	updatedAt: timestamp('updated_at').notNull().defaultNow()
+});
+
+/* A contest is something that voters can participate in =- it contains multiple contest items */
 export const contest = pgTable('contest', {
 	id: text('id').primaryKey(),
+	contestGroupId: text('contest_group_id')
+		.notNull()
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
 	description: text('description').notNull(),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
