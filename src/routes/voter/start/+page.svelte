@@ -44,16 +44,31 @@
 	}
 </script>
 
-<div class="voter-start-container">
-	<div class="voter-start-card">
-		<div class="card-header">
-			<h1>Welcome, Voter</h1>
-			<p class="subtitle">Please enter your Voter ID to begin voting</p>
+<svelte:head>
+	<title>Start Voting - Gov Vote</title>
+</svelte:head>
+
+<main
+	class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] px-5 py-10"
+>
+	<div
+		class="mb-10 w-full max-w-[500px] rounded-xl border bg-[var(--bg-primary)] p-15 shadow-md transition-all hover:shadow-lg sm:p-6 dark:shadow-lg dark:hover:shadow-xl"
+		style="border-color: var(--border-color);"
+	>
+		<div class="mb-10 text-center">
+			<h1 class="m-0 mb-3 text-4xl font-bold text-[var(--text-primary)] sm:text-2xl">
+				Welcome, Voter
+			</h1>
+			<p class="m-0 text-base leading-normal text-[var(--text-secondary)]">
+				Please enter your Voter ID to begin voting
+			</p>
 		</div>
 
-		<form on:submit={handleSubmit} class="voter-form">
-			<div class="form-group">
-				<label for="voter-id-input" class="form-label">Voter ID</label>
+		<form on:submit={handleSubmit} class="flex flex-col gap-6">
+			<div class="flex flex-col gap-2">
+				<label for="voter-id-input" class="text-sm font-semibold text-[var(--text-primary)]">
+					Voter ID
+				</label>
 				<input
 					id="voter-id-input"
 					type="text"
@@ -63,16 +78,29 @@
 					disabled={isLoading}
 					aria-invalid={error ? 'true' : 'false'}
 					aria-describedby={error ? 'error-message' : undefined}
-					class="form-input"
+					class="rounded-lg border-2 bg-[var(--bg-primary)] px-4 py-3 font-[inherit] text-base tracking-widest text-[var(--text-primary)] transition-all placeholder:text-[var(--text-secondary)] placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:focus:border-blue-400 dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]"
+					style="border-color: var(--border-color);"
 				/>
 				{#if error}
-					<p id="error-message" class="error-message" role="alert">{error}</p>
+					<p
+						id="error-message"
+						class="m-0 flex items-center gap-1.5 text-sm text-red-500 before:content-['⚠️']"
+						role="alert"
+					>
+						{error}
+					</p>
 				{/if}
 			</div>
 
-			<button type="submit" disabled={isLoading} class="submit-button">
+			<button
+				type="submit"
+				disabled={isLoading}
+				class="mt-3 flex items-center justify-center gap-2.5 rounded-lg bg-blue-500 px-6 py-3.5 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-[0_8px_16px_rgba(59,130,246,0.3)] focus:outline focus:outline-[3px] focus:outline-blue-500 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-blue-400 dark:text-gray-900 dark:hover:bg-blue-500 dark:focus:outline-blue-400"
+			>
 				{#if isLoading}
-					<span class="loading-spinner"></span>
+					<span
+						class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+					></span>
 					<span>Processing...</span>
 				{:else}
 					<span>Continue</span>
@@ -80,321 +108,49 @@
 			</button>
 		</form>
 
-		<div class="scanner-info">
-			<p>
-				<span class="scanner-icon">📱</span>
-				<span class="scanner-text"
-					>Scanner support coming soon - you'll be able to scan your voter ID card</span
-				>
+		<div
+			class="mt-7.5 rounded-lg border bg-[var(--bg-secondary)] p-4"
+			style="border-color: var(--border-color);"
+		>
+			<p
+				class="m-0 flex items-center gap-3 text-[0.95rem] leading-normal text-[var(--text-secondary)]"
+			>
+				<span aria-hidden="true" class="flex-shrink-0 text-2xl">📱</span>
+				<span>Scanner support coming soon - you'll be able to scan your voter ID card</span>
 			</p>
 		</div>
 	</div>
 
-	<div class="help-section">
-		<h2>Need Help?</h2>
-		<ul>
-			<li><a href="#locate-id">How to locate your Voter ID</a></li>
-			<li><a href="#forgot-id">Forgot your Voter ID?</a></li>
-			<li><a href="#contact">Contact Election Office</a></li>
+	<div
+		class="w-full max-w-[500px] rounded-xl border bg-[var(--bg-secondary)] p-7.5"
+		style="border-color: var(--border-color);"
+	>
+		<h2 class="m-0 mb-5 text-xl font-bold text-[var(--text-primary)]">Need Help?</h2>
+		<ul class="m-0 flex flex-col gap-3 p-0">
+			<li class="m-0">
+				<a
+					href="#locate-id"
+					class="inline-block text-[0.95rem] font-medium text-blue-500 no-underline transition-all hover:translate-x-1 hover:underline focus:rounded focus:px-2 focus:py-1 focus:outline focus:outline-[3px] focus:outline-blue-500 dark:text-blue-400 dark:focus:outline-blue-400"
+				>
+					How to locate your Voter ID
+				</a>
+			</li>
+			<li class="m-0">
+				<a
+					href="#forgot-id"
+					class="inline-block text-[0.95rem] font-medium text-blue-500 no-underline transition-all hover:translate-x-1 hover:underline focus:rounded focus:px-2 focus:py-1 focus:outline focus:outline-[3px] focus:outline-blue-500 dark:text-blue-400 dark:focus:outline-blue-400"
+				>
+					Forgot your Voter ID?
+				</a>
+			</li>
+			<li class="m-0">
+				<a
+					href="#contact"
+					class="inline-block text-[0.95rem] font-medium text-blue-500 no-underline transition-all hover:translate-x-1 hover:underline focus:rounded focus:px-2 focus:py-1 focus:outline focus:outline-[3px] focus:outline-blue-500 dark:text-blue-400 dark:focus:outline-blue-400"
+				>
+					Contact Election Office
+				</a>
+			</li>
 		</ul>
 	</div>
-</div>
-
-<style>
-	.voter-start-container {
-		min-height: 100vh;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 20px;
-		background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-	}
-
-	.voter-start-card {
-		background-color: var(--bg-primary);
-		border-radius: 12px;
-		border: 1px solid var(--border-color);
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-		padding: 60px 40px;
-		max-width: 500px;
-		width: 100%;
-		margin-bottom: 40px;
-		transition: box-shadow 0.3s ease;
-	}
-
-	.dark .voter-start-card {
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-	}
-
-	.voter-start-card:hover {
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-	}
-
-	.dark .voter-start-card:hover {
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-	}
-
-	.card-header {
-		text-align: center;
-		margin-bottom: 40px;
-	}
-
-	.card-header h1 {
-		font-size: 2rem;
-		font-weight: 700;
-		margin: 0 0 12px 0;
-		color: var(--text-primary);
-	}
-
-	.subtitle {
-		font-size: 1rem;
-		color: var(--text-secondary);
-		margin: 0;
-		line-height: 1.5;
-	}
-
-	.voter-form {
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-	}
-
-	.form-group {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.form-label {
-		font-size: 0.95rem;
-		font-weight: 600;
-		color: var(--text-primary);
-		display: block;
-	}
-
-	.form-input {
-		padding: 12px 16px;
-		border: 2px solid var(--border-color);
-		border-radius: 8px;
-		background-color: var(--bg-primary);
-		color: var(--text-primary);
-		font-size: 1rem;
-		font-family: inherit;
-		transition: all 0.2s ease;
-		letter-spacing: 0.05em;
-	}
-
-	.form-input::placeholder {
-		color: var(--text-secondary);
-		opacity: 0.7;
-	}
-
-	.form-input:focus {
-		outline: none;
-		border-color: #3b82f6;
-		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-	}
-
-	.dark .form-input:focus {
-		border-color: #60a5fa;
-		box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-	}
-
-	.form-input:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.form-input[aria-invalid='true'] {
-		border-color: #ef4444;
-	}
-
-	.form-input[aria-invalid='true']:focus {
-		box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-	}
-
-	.error-message {
-		font-size: 0.875rem;
-		color: #ef4444;
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-
-	.error-message::before {
-		content: '⚠️';
-	}
-
-	.submit-button {
-		padding: 14px 24px;
-		background-color: #3b82f6;
-		color: white;
-		border: none;
-		border-radius: 8px;
-		font-size: 1rem;
-		font-weight: 600;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 10px;
-		margin-top: 12px;
-	}
-
-	.submit-button:hover:not(:disabled) {
-		background-color: #1e40af;
-		transform: translateY(-2px);
-		box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-	}
-
-	.submit-button:active:not(:disabled) {
-		transform: translateY(0);
-	}
-
-	.submit-button:disabled {
-		opacity: 0.7;
-		cursor: not-allowed;
-	}
-
-	.submit-button:focus-visible {
-		outline: 3px solid #3b82f6;
-		outline-offset: 3px;
-	}
-
-	.dark .submit-button {
-		background-color: #60a5fa;
-		color: #111827;
-	}
-
-	.dark .submit-button:hover:not(:disabled) {
-		background-color: #3b82f6;
-	}
-
-	.dark .submit-button:focus-visible {
-		outline: 3px solid #60a5fa;
-	}
-
-	.loading-spinner {
-		display: inline-block;
-		width: 16px;
-		height: 16px;
-		border: 2px solid currentColor;
-		border-top-color: transparent;
-		border-radius: 50%;
-		animation: spin 0.6s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-
-	.scanner-info {
-		margin-top: 30px;
-		padding: 16px;
-		background-color: var(--bg-secondary);
-		border-radius: 8px;
-		border: 1px solid var(--border-color);
-	}
-
-	.scanner-info p {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		margin: 0;
-		font-size: 0.95rem;
-		color: var(--text-secondary);
-		line-height: 1.5;
-	}
-
-	.scanner-icon {
-		font-size: 1.5rem;
-		flex-shrink: 0;
-	}
-
-	.help-section {
-		max-width: 500px;
-		width: 100%;
-		background-color: var(--bg-secondary);
-		border-radius: 12px;
-		border: 1px solid var(--border-color);
-		padding: 30px;
-	}
-
-	.help-section h2 {
-		font-size: 1.25rem;
-		font-weight: 700;
-		color: var(--text-primary);
-		margin: 0 0 20px 0;
-	}
-
-	.help-section ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-
-	.help-section li {
-		margin: 0;
-	}
-
-	.help-section a {
-		color: #3b82f6;
-		text-decoration: none;
-		font-size: 0.95rem;
-		font-weight: 500;
-		transition: all 0.2s ease;
-		display: inline-block;
-	}
-
-	.help-section a:hover {
-		text-decoration: underline;
-		transform: translateX(4px);
-	}
-
-	.help-section a:focus-visible {
-		outline: 3px solid #3b82f6;
-		outline-offset: 3px;
-		border-radius: 4px;
-		padding: 4px 8px;
-	}
-
-	.dark .help-section a {
-		color: #60a5fa;
-	}
-
-	.dark .help-section a:focus-visible {
-		outline-color: #60a5fa;
-	}
-
-	/* Responsive Design */
-	@media (max-width: 640px) {
-		.voter-start-container {
-			padding: 20px;
-		}
-
-		.voter-start-card {
-			padding: 40px 24px;
-		}
-
-		.card-header h1 {
-			font-size: 1.625rem;
-		}
-
-		.help-section {
-			padding: 20px;
-		}
-
-		.submit-button {
-			padding: 12px 20px;
-			font-size: 0.95rem;
-		}
-	}
-</style>
+</main>
