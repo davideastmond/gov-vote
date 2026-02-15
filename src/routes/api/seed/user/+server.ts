@@ -66,6 +66,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			.insert(user)
 			.values({
 				id: adminId,
+				email: 'admin@example.com',
 				username: 'admin',
 				hashedPassword: adminPassword,
 				firstName: 'Admin',
@@ -79,6 +80,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			.insert(user)
 			.values({
 				id: voterId,
+				email: 'voter@example.com',
 				username: 'voter',
 				hashedPassword: voterPassword,
 				firstName: 'Sample',
@@ -92,6 +94,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			.insert(user)
 			.values({
 				id: superAdminId,
+				email: 'superadmin@example.com',
 				username: 'superadmin',
 				hashedPassword: superAdminPassword,
 				firstName: 'Super',
