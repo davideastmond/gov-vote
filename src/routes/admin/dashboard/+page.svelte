@@ -1,4 +1,9 @@
 <script lang="ts">
+	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
+
 	type AdminRole = 'admin' | 'super_admin';
 
 	const { data } = $props();
@@ -48,86 +53,77 @@
 					Manage contest groups, monitor activity, and administer settings.
 				</p>
 			</div>
-			<div
-				class="rounded-lg border bg-[var(--bg-secondary)] px-4 py-3"
-				style="border-color: var(--border-color);"
-			>
-				<p class="text-sm font-medium text-[var(--text-secondary)]">Signed in as</p>
-				<p class="text-base font-semibold text-[var(--text-primary)]">{userRole}</p>
-			</div>
+			<Card class="min-w-[200px]">
+				<CardHeader class="pb-2">
+					<CardTitle class="text-sm text-muted-foreground">Signed in as</CardTitle>
+				</CardHeader>
+				<CardContent class="pt-0">
+					<Badge variant="secondary" class="capitalize">
+						{userRole}
+					</Badge>
+				</CardContent>
+			</Card>
 		</header>
 
-		<section
-			class="rounded-xl border bg-[var(--bg-secondary)] p-6"
-			style="border-color: var(--border-color);"
-		>
-			<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-				<h2 class="text-xl font-bold text-[var(--text-primary)]">Contest Groups</h2>
-				<button
-					class="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-blue-600 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700"
-					type="button"
-				>
+		<Card>
+			<CardHeader class="flex flex-wrap items-center justify-between gap-3">
+				<CardTitle>Contest Groups</CardTitle>
+				<Button type="button" class="gap-2">
 					<span aria-hidden="true">➕</span>
 					Create New Contest Group
-				</button>
-			</div>
-			<div
-				class="rounded-lg border bg-[var(--bg-primary)] px-4 py-8 text-center"
-				style="border-color: var(--border-color);"
-			>
-				<p class="mb-2 text-sm font-medium text-[var(--text-primary)]">
-					Contest group list placeholder
-				</p>
-				<p class="text-sm text-[var(--text-secondary)]">
-					This area will display all contest groups once data is connected.
-				</p>
-			</div>
-		</section>
+				</Button>
+			</CardHeader>
+			<CardContent>
+				<Alert>
+					<AlertTitle>Contest group list placeholder</AlertTitle>
+					<AlertDescription>
+						This area will display all contest groups once data is connected.
+					</AlertDescription>
+				</Alert>
+			</CardContent>
+		</Card>
 
 		{#if userRole === 'super_admin'}
-			<section
-				class="rounded-xl border bg-[var(--bg-secondary)] p-6"
-				style="border-color: var(--border-color);"
-			>
-				<h2 class="mb-4 text-xl font-bold text-[var(--text-primary)]">Super Admin Options</h2>
-				<div class="flex flex-wrap gap-4 sm:flex-col">
-					{#each superAdminActions as action}
-						<button
-							type="button"
-							class="flex flex-col items-start gap-2 rounded-lg border bg-[var(--bg-primary)] px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
-							style="border-color: var(--border-color);"
-						>
-							<a href={action.url || '#'} class="w-full">
-								<span class="text-base font-semibold text-[var(--text-primary)]">
-									{action.label}
-								</span>
-								<span class="text-sm text-[var(--text-secondary)]">
-									{action.description}
-								</span>
-							</a>
-						</button>
-					{/each}
-				</div>
-			</section>
+			<Card>
+				<CardHeader>
+					<CardTitle>Super Admin Options</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						{#each superAdminActions as action}
+							<Card class="h-full">
+								<CardHeader class="pb-3">
+									<CardTitle class="text-base">{action.label}</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<p class="text-sm text-[var(--text-secondary)]">{action.description}</p>
+								</CardContent>
+								<CardFooter>
+									<Button variant="outline" href={action.url || '#'} class="w-full">Open</Button>
+								</CardFooter>
+							</Card>
+						{/each}
+					</div>
+				</CardContent>
+			</Card>
 		{:else}
-			<section
-				class="rounded-xl border bg-[var(--bg-secondary)] p-6"
-				style="border-color: var(--border-color);"
-			>
-				<h2 class="mb-2 text-xl font-bold text-[var(--text-primary)]">Admin Options</h2>
-				<p class="mb-4 text-sm text-[var(--text-secondary)]">
-					Admin tools will appear here once configured.
-				</p>
-				<div
-					class="rounded-lg border bg-[var(--bg-primary)] px-4 py-6"
-					style="border-color: var(--border-color);"
-				>
-					<p class="text-sm text-[var(--text-secondary)]">
-						Placeholder for standard admin actions (e.g., review contests, update content, manage
-						voters).
+			<Card>
+				<CardHeader>
+					<CardTitle>Admin Options</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<p class="mb-4 text-sm text-[var(--text-secondary)]">
+						Admin tools will appear here once configured.
 					</p>
-				</div>
-			</section>
+					<Alert>
+						<AlertTitle>Standard admin actions placeholder</AlertTitle>
+						<AlertDescription>
+							Placeholder for standard admin actions (e.g., review contests, update content, manage
+							voters).
+						</AlertDescription>
+					</Alert>
+				</CardContent>
+			</Card>
 		{/if}
 	</div>
 </main>
