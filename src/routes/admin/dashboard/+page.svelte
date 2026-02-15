@@ -45,7 +45,7 @@
 			<div>
 				<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Admin Dashboard</h1>
 				<p class="text-[var(--text-secondary)]">
-					Manage contests, monitor activity, and administer settings.
+					Manage contest groups, monitor activity, and administer settings.
 				</p>
 			</div>
 			<div
@@ -62,22 +62,24 @@
 			style="border-color: var(--border-color);"
 		>
 			<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-				<h2 class="text-xl font-bold text-[var(--text-primary)]">Contests</h2>
+				<h2 class="text-xl font-bold text-[var(--text-primary)]">Contest Groups</h2>
 				<button
 					class="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-blue-600 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700"
 					type="button"
 				>
 					<span aria-hidden="true">➕</span>
-					Create New Contest
+					Create New Contest Group
 				</button>
 			</div>
 			<div
 				class="rounded-lg border bg-[var(--bg-primary)] px-4 py-8 text-center"
 				style="border-color: var(--border-color);"
 			>
-				<p class="mb-2 text-sm font-medium text-[var(--text-primary)]">Contest list placeholder</p>
+				<p class="mb-2 text-sm font-medium text-[var(--text-primary)]">
+					Contest group list placeholder
+				</p>
 				<p class="text-sm text-[var(--text-secondary)]">
-					This area will display all contests once data is connected.
+					This area will display all contest groups once data is connected.
 				</p>
 			</div>
 		</section>
