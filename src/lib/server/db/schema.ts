@@ -131,6 +131,9 @@ export const voterEligibility = pgTable('voter_eligibility', {
 	pollingStationId: text('polling_station_id')
 		.notNull()
 		.references(() => pollingStation.id, { onDelete: 'cascade' }),
+	contestId: text('contest_id')
+		.notNull()
+		.references(() => contest.id, { onDelete: 'cascade' }),
 	isEligible: text('is_eligible').notNull(),
 	isComplete: text('is_complete').notNull(),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -149,3 +152,6 @@ export const adminContest = pgTable('admin_contest', {
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
+
+// TODO: Voter card table to track which voters have been issued voter cards and their status
+// There should be something in this table that generates barcode or QR code for the voter card that can be scanned at the polling station to verify the voter's identity and eligibility to vote
