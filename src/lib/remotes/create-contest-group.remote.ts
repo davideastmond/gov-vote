@@ -1,10 +1,13 @@
 import { command } from '$app/server';
 import type { PollingStationAddress } from '$lib/definitions/address';
 import type { Contest } from '$lib/definitions/contest-group';
+import { db } from '$lib/server/db';
+import { contestGroup } from '$lib/server/db/schema';
 import { createContestGroupValidator } from '$lib/validators/create-contest-group.validator';
 import z from 'zod';
 
 type InputData = {
+	id: string;
 	title: string;
 	description: string;
 	adminIds: string[];
@@ -30,7 +33,22 @@ export const createContestGroup = command(
 			}
 		}
 
-		const { title, description, adminIds, contests, pollingStationAddresses } = data;
-		console.info('34 - Passed validation!', data);
+		const { id, title, description, adminIds, contests, pollingStationAddresses } = data;
+
+		// Create the contest group.
+		try {
+			const newContestGroup = await db
+				.insert(contestGroup)
+				.values({
+					id: id,
+					title,
+					description
+				})
+				.returning({ id: contestGroup.id });
+
+			// Associate the admins with the contest group.
+		} catch (error) {
+			console.error(error);
+		}
 	}
 );

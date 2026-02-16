@@ -144,14 +144,14 @@ export const voterEligibility = pgTable('voter_eligibility', {
 });
 
 // Keep a table that tracks which contests an admin is responsible for managing (1 to many relationship)
-export const adminContest = pgTable('admin_contest', {
+export const adminContestGroup = pgTable('admin_contest_group', {
 	id: text('id').primaryKey(),
 	adminId: text('admin_id')
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
-	contestId: text('contest_id')
+	contestGroupId: text('contest_group_id')
 		.notNull()
-		.references(() => contest.id, { onDelete: 'cascade' }),
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
