@@ -82,7 +82,7 @@ export const contest = pgTable('contest', {
 		.notNull()
 		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
-	description: text('description').notNull(),
+	description: text('description'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
@@ -94,7 +94,7 @@ export const contestItem = pgTable('contest_item', {
 		.notNull()
 		.references(() => contest.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
-	auxiliaryText: text('auxiliary_text').notNull(),
+	auxiliaryText: text('auxiliary_text'),
 	contestItemType: contestItemTypeEnum().notNull(),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
@@ -117,7 +117,7 @@ export const voterChoice = pgTable('voter_choice', {
 
 export const pollingStation = pgTable('polling_station', {
 	id: text('id').primaryKey(),
-	name: text('name').notNull(),
+	name: text('name'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
@@ -131,6 +131,9 @@ export const voterEligibility = pgTable('voter_eligibility', {
 	pollingStationId: text('polling_station_id')
 		.notNull()
 		.references(() => pollingStation.id, { onDelete: 'cascade' }),
+	contestGroupId: text('contest_group_id')
+		.notNull()
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	contestId: text('contest_id')
 		.notNull()
 		.references(() => contest.id, { onDelete: 'cascade' }),
