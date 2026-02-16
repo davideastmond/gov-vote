@@ -3,12 +3,11 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
-
-	type AdminRole = 'admin' | 'super_admin';
+	import type { UserRole } from '$lib/definitions/user.js';
 
 	const { data } = $props();
 	// Placeholder role. Replace with real auth data when available.
-	const userRole: Omit<AdminRole, 'voter'> = data?.session?.user?.role || 'admin';
+	const userRole: Omit<UserRole, 'voter'> = data?.session?.user?.role || 'admin';
 
 	const superAdminActions = [
 		{
@@ -68,10 +67,12 @@
 		<Card>
 			<CardHeader class="flex flex-wrap items-center justify-between gap-3">
 				<CardTitle>Contest Groups</CardTitle>
-				<Button type="button" class="gap-2">
-					<span aria-hidden="true">➕</span>
-					Create New Contest Group
-				</Button>
+				<a href="/admin/dashboard/contest-groups/create">
+					<Button variant="outline" class="gap-2">
+						<span aria-hidden="true">➕</span>
+						Create New Contest Group
+					</Button>
+				</a>
 			</CardHeader>
 			<CardContent>
 				<Alert>
