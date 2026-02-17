@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -189,9 +190,15 @@
 
 		try {
 			const result = await createContestGroup(submissionData);
-			if (result && result.errors) {
+			if (result && 'errors' in result) {
 				console.error('Submission errors:', result.errors);
 				return;
+			}
+
+			if (result && 'contestGroupId' in result) {
+				console.log('Contest group created with ID:', result.contestGroupId);
+				// navigate to the contest group details page or reset the form for a new entry
+				await goto(`/admin/dashboard/contest-groups/view/${result.contestGroupId}`); // Navigate to the new contest group details page
 			}
 		} catch (error) {
 			console.error('Error submitting contest group:', error);
