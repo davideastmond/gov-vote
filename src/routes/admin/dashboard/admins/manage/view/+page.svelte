@@ -37,7 +37,13 @@
 	<div class="mx-auto w-full max-w-6xl">
 		<!-- Header -->
 		<header class="mb-8">
-			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Manage Admins</h1>
+			<a
+				href="/admin/dashboard/admins/manage"
+				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+			>
+				&larr; Back to Manage Admins
+			</a>
+			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Edit Admins</h1>
 			<p class="text-[var(--text-secondary)]">
 				Search and view admin accounts ({data.totalCount} total)
 			</p>

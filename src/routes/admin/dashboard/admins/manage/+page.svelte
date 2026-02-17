@@ -10,6 +10,12 @@
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
 		<header>
+			<a
+				href="/admin/dashboard"
+				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+			>
+				&larr; Back to Admin Dashboard
+			</a>
 			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Manage Admins</h1>
 			<p class="text-[var(--text-secondary)]">Create, edit, or delete admin users.</p>
 		</header>
@@ -37,7 +43,7 @@
 							class="flex h-auto w-full flex-col items-start gap-2 px-4 py-4 text-left"
 						>
 							<span class="text-base font-semibold">Edit Admin</span>
-							<span class="text-sm font-normal text-[var(--text-secondary)]">
+							<span class="text-sm font-normal text-wrap text-[var(--text-secondary)]">
 								View and edit admins / account details.
 							</span>
 						</Button>

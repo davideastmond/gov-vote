@@ -107,6 +107,12 @@
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto w-full max-w-2xl">
 		<header class="mb-6">
+			<a
+				href="/admin/dashboard/admins/manage"
+				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+			>
+				&larr; Back to Manage Admins
+			</a>
 			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Create Admin</h1>
 			<p class="text-[var(--text-secondary)]">Set up a new admin account.</p>
 		</header>

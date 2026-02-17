@@ -219,6 +219,12 @@
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
 		<header>
+			<a
+				href="/admin/dashboard"
+				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+			>
+				&larr; Back to Dashboard
+			</a>
 			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Create Contest Group</h1>
 			<p class="text-[var(--text-secondary)]">
 				Use the wizard to configure contest groups, admins, contests, and polling stations.
