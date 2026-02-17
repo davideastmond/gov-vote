@@ -1,3 +1,8 @@
+<script lang="ts">
+	import { Button } from '$lib/components/ui/button';
+	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+</script>
+
 <svelte:head>
 	<title>Manage Admins - Gov Vote</title>
 </svelte:head>
@@ -5,50 +10,46 @@
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
 		<header>
+			<a
+				href="/admin/dashboard"
+				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+			>
+				&larr; Back to Admin Dashboard
+			</a>
 			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Manage Admins</h1>
-			<p class="text-[var(--text-secondary)]">
-				Create, edit, or delete admin users. No actions are wired yet.
-			</p>
+			<p class="text-[var(--text-secondary)]">Create, edit, or delete admin users.</p>
 		</header>
 
-		<section
-			class="rounded-xl border bg-[var(--bg-secondary)] p-6"
-			style="border-color: var(--border-color);"
-		>
-			<h2 class="mb-4 text-xl font-bold text-[var(--text-primary)]">Admin Options</h2>
-			<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-				<a href="/admin/dashboard/admins/manage/create" class="block">
-					<button
-						type="button"
-						class="flex w-full flex-col items-start gap-2 rounded-lg border bg-[var(--bg-primary)] px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
-						style="border-color: var(--border-color);"
-					>
-						<span class="text-base font-semibold text-[var(--text-primary)]">Create Admin</span>
-						<span class="text-sm text-[var(--text-secondary)]">
-							Add a new admin user account.
-						</span>
-					</button>
-				</a>
-
-				<button
-					type="button"
-					class="flex w-full flex-col items-start gap-2 rounded-lg border bg-[var(--bg-primary)] px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
-					style="border-color: var(--border-color);"
-				>
-					<span class="text-base font-semibold text-[var(--text-primary)]">Edit Admin</span>
-					<span class="text-sm text-[var(--text-secondary)]">
-						Update admin roles or account details.
-					</span>
-				</button>
-				<button
-					type="button"
-					class="flex w-full flex-col items-start gap-2 rounded-lg border bg-[var(--bg-primary)] px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
-					style="border-color: var(--border-color);"
-				>
-					<span class="text-base font-semibold text-[var(--text-primary)]">Delete Admin</span>
-					<span class="text-sm text-[var(--text-secondary)]"> Remove an admin user account. </span>
-				</button>
-			</div>
-		</section>
+		<Card>
+			<CardHeader>
+				<CardTitle>Admin Options</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<a href="/admin/dashboard/admins/manage/create" class="block">
+						<Button
+							variant="outline"
+							class="flex h-auto w-full flex-col items-start gap-2 px-4 py-4 text-left"
+						>
+							<span class="text-base font-semibold">Create Admin</span>
+							<span class="text-sm font-normal text-[var(--text-secondary)]">
+								Add a new admin user account.
+							</span>
+						</Button>
+					</a>
+					<a href="/admin/dashboard/admins/manage/view" class="block">
+						<Button
+							variant="outline"
+							class="flex h-auto w-full flex-col items-start gap-2 px-4 py-4 text-left"
+						>
+							<span class="text-base font-semibold">Edit Admin</span>
+							<span class="text-sm font-normal text-wrap text-[var(--text-secondary)]">
+								View and edit admins / account details.
+							</span>
+						</Button>
+					</a>
+				</div>
+			</CardContent>
+		</Card>
 	</div>
 </main>
