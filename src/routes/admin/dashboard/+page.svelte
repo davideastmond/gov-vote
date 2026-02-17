@@ -75,12 +75,30 @@
 				</a>
 			</CardHeader>
 			<CardContent>
-				<Alert>
-					<AlertTitle>Contest group list placeholder</AlertTitle>
-					<AlertDescription>
-						This area will display all contest groups once data is connected.
-					</AlertDescription>
-				</Alert>
+				{#if data.contestGroups && data.contestGroups.length > 0}
+					<div class="space-y-3">
+						{#each data.contestGroups as contestGroup}
+							<a
+								href="/admin/dashboard/contest-groups/view/{contestGroup.contestGroupId}"
+								class="block rounded-lg border p-4 transition-colors hover:bg-accent"
+							>
+								<h3 class="font-semibold text-[var(--text-primary)]">
+									{contestGroup.contestGroupTitle}
+								</h3>
+								{#if contestGroup.contestGroupDescription}
+									<p class="mt-1 text-sm text-[var(--text-secondary)]">
+										{contestGroup.contestGroupDescription}
+									</p>
+								{/if}
+							</a>
+						{/each}
+					</div>
+				{:else}
+					<Alert>
+						<AlertTitle>No data.</AlertTitle>
+						<AlertDescription>Create your first contest group to get started.</AlertDescription>
+					</Alert>
+				{/if}
 			</CardContent>
 		</Card>
 
