@@ -52,9 +52,6 @@ export const load: PageServerLoad = async ({ params }) => {
 		.innerJoin(contest, eq(contest.contestGroupId, contestGroup.id))
 		.innerJoin(contestItem, eq(contestItem.contestId, contest.id));
 
-	console.log('Contest group basics:', contestGroupBasics);
-	console.log('Ballot contests:', ballotContests);
-
 	return {
 		contestGroupBasics: contestGroupBasics,
 		ballotContests: ballotContests
