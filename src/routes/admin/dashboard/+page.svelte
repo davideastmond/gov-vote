@@ -17,24 +17,10 @@
 			url: '/admin/dashboard/admins/manage'
 		},
 		{
-			id: 'audit-logs',
-			label: 'Audit Logs',
-			description: 'Review security and access logs'
-		},
-		{
-			id: 'system-settings',
-			label: 'System Settings',
-			description: 'Configure global voting settings'
-		},
-		{
-			id: 'data-export',
-			label: 'Data Export',
-			description: 'Export contest data and reports'
-		},
-		{
-			id: 'access-policies',
-			label: 'Access Policies',
-			description: 'Set role permissions and access rules'
+			id: 'contest-groups',
+			label: 'Contest Groups',
+			description: 'Search, view, create election contest groups',
+			url: '/admin/dashboard/contest-groups/view'
 		}
 	];
 </script>
@@ -63,45 +49,6 @@
 				</CardContent>
 			</Card>
 		</header>
-
-		<Card>
-			<CardHeader class="flex flex-wrap items-center justify-between gap-3">
-				<CardTitle>Contest Groups</CardTitle>
-				<a href="/admin/dashboard/contest-groups/create">
-					<Button variant="outline" class="gap-2">
-						<span aria-hidden="true">➕</span>
-						Create New Contest Group
-					</Button>
-				</a>
-			</CardHeader>
-			<CardContent>
-				{#if data.contestGroups && data.contestGroups.length > 0}
-					<div class="space-y-3">
-						{#each data.contestGroups as contestGroup}
-							<a
-								href="/admin/dashboard/contest-groups/view/{contestGroup.contestGroupId}"
-								class="block rounded-lg border p-4 transition-colors hover:bg-accent"
-							>
-								<h3 class="font-semibold text-[var(--text-primary)]">
-									{contestGroup.contestGroupTitle}
-								</h3>
-								{#if contestGroup.contestGroupDescription}
-									<p class="mt-1 text-sm text-[var(--text-secondary)]">
-										{contestGroup.contestGroupDescription}
-									</p>
-								{/if}
-							</a>
-						{/each}
-					</div>
-				{:else}
-					<Alert>
-						<AlertTitle>No data.</AlertTitle>
-						<AlertDescription>Create your first contest group to get started.</AlertDescription>
-					</Alert>
-				{/if}
-			</CardContent>
-		</Card>
-
 		{#if userRole === 'super_admin'}
 			<Card>
 				<CardHeader>
