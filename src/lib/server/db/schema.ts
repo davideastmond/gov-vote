@@ -40,23 +40,11 @@ export const userAddress = pgTable('user_address', {
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
-export const pollingStationAddress = pgTable('polling_station_address', {
+export const contestGroupPollingStation = pgTable('contest_group_polling_station', {
 	id: text('id').primaryKey(),
-	pollingStationId: text('polling_station_id')
+	contestGroupId: text('contest_group_id')
 		.notNull()
-		.references(() => pollingStation.id, { onDelete: 'cascade' }),
-	addressId: text('address_id')
-		.notNull()
-		.references(() => address.id, { onDelete: 'cascade' }),
-	createdAt: timestamp('created_at').notNull().defaultNow(),
-	updatedAt: timestamp('updated_at').notNull().defaultNow()
-});
-
-export const contestPollingStation = pgTable('contest_polling_station', {
-	id: text('id').primaryKey(),
-	contestId: text('contest_id')
-		.notNull()
-		.references(() => contest.id, { onDelete: 'cascade' }),
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	pollingStationId: text('polling_station_id')
 		.notNull()
 		.references(() => pollingStation.id, { onDelete: 'cascade' }),
@@ -118,6 +106,9 @@ export const voterChoice = pgTable('voter_choice', {
 export const pollingStation = pgTable('polling_station', {
 	id: text('id').primaryKey(),
 	name: text('name'),
+	addressId: text('address_id')
+		.notNull()
+		.references(() => address.id, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });

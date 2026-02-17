@@ -57,6 +57,20 @@
       "when": 1771283620679,
       "tag": "0007_black_catseye",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1771288654491,
+      "tag": "0008_cute_shen",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1771290005464,
+      "tag": "0009_flippant_jazinda",
+      "breakpoints": true
     }
   ]
 }
