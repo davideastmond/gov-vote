@@ -40,23 +40,11 @@ export const userAddress = pgTable('user_address', {
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
-export const pollingStationAddress = pgTable('polling_station_address', {
+export const contestGroupPollingStation = pgTable('contest_group_polling_station', {
 	id: text('id').primaryKey(),
-	pollingStationId: text('polling_station_id')
+	contestGroupId: text('contest_group_id')
 		.notNull()
-		.references(() => pollingStation.id, { onDelete: 'cascade' }),
-	addressId: text('address_id')
-		.notNull()
-		.references(() => address.id, { onDelete: 'cascade' }),
-	createdAt: timestamp('created_at').notNull().defaultNow(),
-	updatedAt: timestamp('updated_at').notNull().defaultNow()
-});
-
-export const contestPollingStation = pgTable('contest_polling_station', {
-	id: text('id').primaryKey(),
-	contestId: text('contest_id')
-		.notNull()
-		.references(() => contest.id, { onDelete: 'cascade' }),
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	pollingStationId: text('polling_station_id')
 		.notNull()
 		.references(() => pollingStation.id, { onDelete: 'cascade' }),
@@ -82,7 +70,7 @@ export const contest = pgTable('contest', {
 		.notNull()
 		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
-	description: text('description').notNull(),
+	description: text('description'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
@@ -94,7 +82,7 @@ export const contestItem = pgTable('contest_item', {
 		.notNull()
 		.references(() => contest.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
-	auxiliaryText: text('auxiliary_text').notNull(),
+	auxiliaryText: text('auxiliary_text'),
 	contestItemType: contestItemTypeEnum().notNull(),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
@@ -117,7 +105,10 @@ export const voterChoice = pgTable('voter_choice', {
 
 export const pollingStation = pgTable('polling_station', {
 	id: text('id').primaryKey(),
-	name: text('name').notNull(),
+	name: text('name'),
+	addressId: text('address_id')
+		.notNull()
+		.references(() => address.id, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
@@ -131,6 +122,12 @@ export const voterEligibility = pgTable('voter_eligibility', {
 	pollingStationId: text('polling_station_id')
 		.notNull()
 		.references(() => pollingStation.id, { onDelete: 'cascade' }),
+	contestGroupId: text('contest_group_id')
+		.notNull()
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
+	contestId: text('contest_id')
+		.notNull()
+		.references(() => contest.id, { onDelete: 'cascade' }),
 	isEligible: text('is_eligible').notNull(),
 	isComplete: text('is_complete').notNull(),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -138,14 +135,17 @@ export const voterEligibility = pgTable('voter_eligibility', {
 });
 
 // Keep a table that tracks which contests an admin is responsible for managing (1 to many relationship)
-export const adminContest = pgTable('admin_contest', {
+export const adminContestGroup = pgTable('admin_contest_group', {
 	id: text('id').primaryKey(),
 	adminId: text('admin_id')
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
-	contestId: text('contest_id')
+	contestGroupId: text('contest_group_id')
 		.notNull()
-		.references(() => contest.id, { onDelete: 'cascade' }),
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
+
+// TODO: Voter card table to track which voters have been issued voter cards and their status
+// There should be something in this table that generates barcode or QR code for the voter card that can be scanned at the polling station to verify the voter's identity and eligibility to vote

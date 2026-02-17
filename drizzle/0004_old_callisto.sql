@@ -1,0 +1,2 @@
+ALTER TABLE "voter_eligibility" ADD COLUMN "contest_id" text NOT NULL;--> statement-breakpoint
+ALTER TABLE "voter_eligibility" ADD CONSTRAINT "voter_eligibility_contest_id_contest_id_fk" FOREIGN KEY ("contest_id") REFERENCES "public"."contest"("id") ON DELETE cascade ON UPDATE no action;
