@@ -1,6 +1,6 @@
-import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
+import { checkAuthToken, getAuthTokenFromHeader } from '$lib/server/utils/header-request';
 import { json } from '@sveltejs/kit';
 import bcrypt from 'bcrypt';
 import type { RequestHandler } from './$types';
@@ -12,37 +12,9 @@ import type { RequestHandler } from './$types';
  */
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		// Check for Authorization header
-		const authHeader = request.headers.get('Authorization');
+		const token = getAuthTokenFromHeader(request);
 
-		if (!authHeader || !authHeader.startsWith('Bearer ')) {
-			return json(
-				{
-					error: 'Unauthorized',
-					message: 'Missing or invalid Authorization header. Expected format: Bearer <token>'
-				},
-				{ status: 401 }
-			);
-		}
-
-		// Extract token from header
-		const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-		// Validate token against environment variable
-		const expectedToken = env.SEED_AUTH_TOKEN;
-
-		if (!expectedToken) {
-			console.error('SEED_AUTH_TOKEN is not configured in environment variables');
-			return json(
-				{
-					error: 'Server Configuration Error',
-					message: 'Seed endpoint is not properly configured'
-				},
-				{ status: 500 }
-			);
-		}
-
-		if (token !== expectedToken) {
+		if (!checkAuthToken(token as string)) {
 			return json(
 				{
 					error: 'Forbidden',

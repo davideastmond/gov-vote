@@ -7,7 +7,7 @@ import bcrypt from 'bcrypt';
 declare module '@auth/sveltekit' {
 	interface Session {
 		user: {
-			role: 'admin' | 'voter';
+			role: 'admin' | 'voter' | 'super_admin';
 			username: string;
 			firstName: string;
 			lastName: string;
@@ -32,7 +32,11 @@ export const { signIn, signOut, handle } = SvelteKitAuth({
 
 				// Find the user in the database and check their password
 				const targetUser = await db.query.user.findFirst({
-					where: (users, { eq }) => eq(users.username, credentials.username as string)
+					where: (users, { eq, and, or }) =>
+						and(
+							eq(users.username, credentials.username as string),
+							or(eq(users.role, 'admin'), eq(users.role, 'super_admin'))
+						)
 				});
 				if (!targetUser) {
 					throw new Error(
