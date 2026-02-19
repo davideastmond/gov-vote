@@ -21,6 +21,18 @@
 			label: 'Contest Groups',
 			description: 'Search, view, create election contest groups',
 			url: '/admin/dashboard/contest-groups/view'
+		},
+		{
+			id: 'create-voters',
+			label: 'Create Voters',
+			description: 'Batch add new voters to the system via JSON upload',
+			url: '/admin/dashboard/voters/create'
+		},
+		{
+			id: 'create-voter-eligibility',
+			label: 'Create Voter Eligibility',
+			description: 'Batch create voter eligibility records via JSON upload',
+			url: '/admin/dashboard/voter-eligibility/create'
 		}
 	];
 </script>
