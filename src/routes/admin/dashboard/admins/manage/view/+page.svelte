@@ -38,6 +38,12 @@
 		<!-- Header -->
 		<header class="mb-8">
 			<a
+				href="/admin/dashboard"
+				class="block text-sm text-(--text-secondary) hover:text-(--text-primary)"
+			>
+				&larr; Back to Dashboard
+			</a>
+			<a
 				href="/admin/dashboard/admins/manage"
 				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
 			>
