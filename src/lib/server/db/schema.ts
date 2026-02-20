@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['admin', 'voter', 'super_admin']);
 export const contestItemTypeEnum = pgEnum('contest_item_type', [
@@ -128,8 +128,8 @@ export const voterEligibility = pgTable('voter_eligibility', {
 	contestId: text('contest_id')
 		.notNull()
 		.references(() => contest.id, { onDelete: 'cascade' }),
-	isEligible: text('is_eligible').notNull(),
-	isComplete: text('is_complete').notNull(),
+	isEligible: boolean('is_eligible').default(false),
+	isComplete: boolean('is_complete').default(false), // This field can be used to track whether the eligibility check has been completed for this voter (e.g. if there are any manual steps that need to be taken to verify the voter's eligibility, this can be marked as complete once those steps are done)
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
@@ -149,3 +149,16 @@ export const adminContestGroup = pgTable('admin_contest_group', {
 
 // TODO: Voter card table to track which voters have been issued voter cards and their status
 // There should be something in this table that generates barcode or QR code for the voter card that can be scanned at the polling station to verify the voter's identity and eligibility to vote
+export const voterCard = pgTable('voter_card', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	contestGroupId: text('contest_group_id')
+		.notNull()
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
+	cardStatus: text('card_status').notNull(), // e.g. 'issued', 'active', 'revoked'
+	cardCode: text('card_code').notNull(), // This is the code that can be scanned at the polling station
+	createdAt: timestamp('created_at').notNull().defaultNow(),
+	updatedAt: timestamp('updated_at').notNull().defaultNow()
+});
