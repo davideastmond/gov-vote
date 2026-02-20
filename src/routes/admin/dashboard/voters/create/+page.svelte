@@ -77,6 +77,12 @@
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto flex w-full max-w-4xl flex-col gap-8">
 		<header>
+			<a
+				href="/admin/dashboard"
+				class="mb-2 inline-block text-sm text-(--text-secondary) hover:text-(--text-primary)"
+			>
+				&larr; Back to Dashboard
+			</a>
 			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Create Voters</h1>
 			<p class="text-[var(--text-secondary)]">
 				Batch upload voters by pasting a JSON array with voter information.
