@@ -1,10 +1,6 @@
 import { db } from '$lib/server/db';
 import { address, user, userAddress } from '$lib/server/db/schema';
-import {
-	checkAuthToken,
-	getAdminUserNameAndPasswordFromHeader,
-	getAuthTokenFromHeader
-} from '$lib/server/utils/header-request';
+import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
 import {
 	batchCreateUserValidator,
 	type UserEntry
@@ -22,87 +18,21 @@ import type { RequestHandler } from './$types';
 // External clients (e.g. scripts, Postman) must provide a valid bearer token in the Authorization header as well as username and password in the headers for basic auth. This is to prevent abuse of the endpoint by unauthorized parties while still allowing internal use without extra friction.
 export const POST: RequestHandler = async (event) => {
 	// Security layer
+
 	try {
-		const session = await event.locals.auth();
-
-		if (session?.user) {
-			if (!['admin', 'super_admin'].includes(session.user.role)) {
-				return json(
-					{
-						success: false,
-						error: 'Forbidden',
-						message: 'You do not have permission to access this resource.'
-					},
-					{ status: 403 }
-				);
-			}
-		} else {
-			// Require credentials in the request headers for external clients
-			const bearerToken = getAuthTokenFromHeader(event.request);
-			if (!checkAuthToken(bearerToken as string)) {
-				// Return an error response if the token is invalid
-				return json(
-					{
-						success: false,
-						error: 'Forbidden',
-						message: 'Invalid authentication token'
-					},
-					{ status: 403 }
-				);
-			}
-
-			// Extract username and password from headers
-			const data = getAdminUserNameAndPasswordFromHeader(event.request);
-			if (!data) {
-				return json(
-					{
-						success: false,
-						error: 'Unauthorized',
-						message:
-							'Missing admin credentials in headers. Expected X-Admin-Username and X-Admin-Password.'
-					},
-					{ status: 401 }
-				);
-			}
-			const { username, password } = data;
-
-			const adminUser = await db.query.user.findFirst({
-				where: (users, { eq }) => eq(users.username, username)
-			});
-			if (!adminUser) {
-				return json(
-					{
-						success: false,
-						error: 'Unauthorized',
-						message: 'Admin user not found with the provided username.'
-					},
-					{ status: 401 }
-				);
-			}
-			// check password
-			if (!bcrypt.compareSync(password, adminUser.hashedPassword)) {
-				return json(
-					{
-						success: false,
-						error: 'Unauthorized',
-						message: 'Invalid credentials.'
-					},
-					{ status: 401 }
-				);
-			}
-		}
-	} catch (err) {
-		console.error('Error processing batch create voters request:', err);
-		return (
-			json({
+		await adminAuthorizationGuard(event);
+	} catch (error) {
+		return json(
+			{
 				success: false,
-				error: 'Internal Server Error: ' + (err instanceof Error ? err.message : 'Unknown error'),
-				message: 'An error occurred while processing the request.'
-			}),
-			{ status: 500, headers: { 'Content-Type': 'application/json' } }
+				error: 'Unauthorized',
+				message:
+					'You must be an authenticated admin user or provide valid authentication credentials to access this endpoint.',
+				details: error instanceof Error ? error.message : 'Unknown error'
+			},
+			{ status: 400 }
 		);
 	}
-
 	// Validation of request body
 	const requestBody: Array<UserEntry> = await event.request.json();
 	try {
