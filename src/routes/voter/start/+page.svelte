@@ -5,15 +5,41 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
 
-	let voterId = '';
+	let voterCardCode = '';
 	let isLoading = false;
 	let error = '';
 
-	$: if (voterId) {
-		const normalized = voterId.toUpperCase();
-		if (normalized !== voterId) {
-			voterId = normalized;
+	function formatUUID(value: string): string {
+		// Remove all non-hexadecimal characters and hyphens
+		const cleaned = value.replace(/[^0-9a-fA-F]/g, '').toUpperCase();
+
+		// Limit to 32 characters (UUID without hyphens)
+		const truncated = cleaned.slice(0, 32);
+
+		// Format as UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+		if (truncated.length <= 8) {
+			return truncated;
+		} else if (truncated.length <= 12) {
+			return `${truncated.slice(0, 8)}-${truncated.slice(8)}`;
+		} else if (truncated.length <= 16) {
+			return `${truncated.slice(0, 8)}-${truncated.slice(8, 12)}-${truncated.slice(12)}`;
+		} else if (truncated.length <= 20) {
+			return `${truncated.slice(0, 8)}-${truncated.slice(8, 12)}-${truncated.slice(12, 16)}-${truncated.slice(16)}`;
+		} else {
+			return `${truncated.slice(0, 8)}-${truncated.slice(8, 12)}-${truncated.slice(12, 16)}-${truncated.slice(16, 20)}-${truncated.slice(20)}`;
 		}
+	}
+
+	function handleVoterCodeInput(e: Event) {
+		const target = e.target as HTMLInputElement;
+		voterCardCode = formatUUID(target.value);
+
+		if (error) {
+			error = '';
+		}
+	}
+
+	$: if (voterCardCode) {
 		if (error) {
 			error = '';
 		}
@@ -23,26 +49,26 @@
 		e.preventDefault();
 		error = '';
 
-		if (!voterId.trim()) {
-			error = 'Please enter your voter ID';
+		if (!voterCardCode.trim()) {
+			error = 'Please enter your Voter Card Code';
 			return;
 		}
 
 		isLoading = true;
 
 		try {
-			// TODO: Replace with actual API call to validate voter ID
+			// TODO: Replace with actual API call to validate voter card code
 			// const response = await fetch('/api/voter/validate', {
 			//   method: 'POST',
-			//   body: JSON.stringify({ voterId });
+			//   body: JSON.stringify({ voterCardCode });
 			// });
 
 			// Placeholder: simulate API call
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
 			// Redirect to next step after validation
-			// window.location.href = `/voter/confirm?id=${encodeURIComponent(voterId)}`;
-			console.log('Voter ID submitted:', voterId);
+			// window.location.href = `/voter/confirm?id=${encodeURIComponent(voterCardCode)}`;
+			console.log('Voter Card Code submitted:', voterCardCode);
 		} catch (err) {
 			error = 'An error occurred. Please try again.';
 			console.error(err);
@@ -65,22 +91,23 @@
 		<CardHeader class="text-center">
 			<CardTitle class="text-4xl sm:text-2xl">Welcome, Voter</CardTitle>
 			<p class="m-0 text-base leading-normal text-[var(--text-secondary)]">
-				Please enter your Voter ID to begin voting
+				Please enter your Voter Card Code to begin voting
 			</p>
 		</CardHeader>
 		<CardContent>
 			<form on:submit={handleSubmit} class="flex flex-col gap-6">
 				<div class="flex flex-col gap-2">
-					<Label for="voter-id-input">Voter ID</Label>
+					<Label for="voter-id-input">Voter Card Code</Label>
 					<Input
 						id="voter-id-input"
 						type="text"
-						placeholder="Enter your 10-digit Voter ID"
-						bind:value={voterId}
+						placeholder="Enter your UUID (e.g., XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)"
+						bind:value={voterCardCode}
+						oninput={handleVoterCodeInput}
 						disabled={isLoading}
 						aria-invalid={error ? 'true' : 'false'}
 						aria-describedby={error ? 'error-message' : undefined}
-						class="tracking-widest"
+						class="font-mono tracking-widest"
 					/>
 					{#if error}
 						<p
@@ -111,7 +138,7 @@
 				class="m-0 flex items-center gap-3 text-[0.95rem] leading-normal text-[var(--text-secondary)]"
 			>
 				<span aria-hidden="true" class="flex-shrink-0 text-2xl">📱</span>
-				<span>Scanner support coming soon - you'll be able to scan your voter ID card</span>
+				<span>Scanner support coming soon - you'll be able to scan your Voter Card Code</span>
 			</p>
 		</CardFooter>
 	</Card>
@@ -127,7 +154,7 @@
 						href="#locate-id"
 						class="inline-block text-[0.95rem] font-medium text-blue-500 no-underline transition-all hover:translate-x-1 hover:underline focus:rounded focus:px-2 focus:py-1 focus:outline focus:outline-[3px] focus:outline-blue-500 dark:text-blue-400 dark:focus:outline-blue-400"
 					>
-						How to locate your Voter ID
+						How to locate your Voter Card Code
 					</a>
 				</li>
 				<li class="m-0">
