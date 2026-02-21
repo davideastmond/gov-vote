@@ -8,19 +8,50 @@
 	const { data } = $props();
 	// Placeholder role. Replace with real auth data when available.
 	const userRole: Omit<UserRole, 'voter'> = data?.session?.user?.role || 'admin';
-
+	type SuperAdminAction = {
+		id: string;
+		label: string;
+		description: string;
+		urls?: { label: string; url: string }[];
+	};
 	const superAdminActions = [
 		{
 			id: 'manage-admins',
 			label: 'Manage Admins',
 			description: 'Create, edit, and deactivate admin accounts',
-			url: '/admin/dashboard/admins/manage'
+			urls: [{ label: 'Manage Admins', url: '/admin/dashboard/admins/manage' }]
+		},
+		{
+			id: 'create-polling-stations',
+			label: 'Create Polling Stations',
+			description: 'View, add and batch-add new polling stations to the system via JSON upload',
+			urls: [
+				{ label: 'View Polling Stations', url: '/admin/dashboard/polling-stations/view' },
+				{
+					label: 'Create Polling Stations',
+					url: '/admin/dashboard/polling-stations/create'
+				}
+			]
 		},
 		{
 			id: 'contest-groups',
 			label: 'Contest Groups',
 			description: 'Search, view, create election contest groups',
-			url: '/admin/dashboard/contest-groups/view'
+			urls: [{ label: 'View Contest Groups', url: '/admin/dashboard/contest-groups/view' }]
+		},
+		{
+			id: 'create-voters',
+			label: 'Create Voters',
+			description: 'Batch add new voters to the system via JSON upload',
+			urls: [{ label: 'Create Voters', url: '/admin/dashboard/voters/create' }]
+		},
+		{
+			id: 'create-voter-eligibility',
+			label: 'Create Voter Eligibility',
+			description: 'Batch create voter eligibility records via JSON upload',
+			urls: [
+				{ label: 'Create Voter Eligibility', url: '/admin/dashboard/voter-eligibility/create' }
+			]
 		}
 	];
 </script>
@@ -65,7 +96,17 @@
 									<p class="text-sm text-[var(--text-secondary)]">{action.description}</p>
 								</CardContent>
 								<CardFooter>
-									<Button variant="outline" href={action.url || '#'} class="w-full">Open</Button>
+									<div class="flex w-full flex-col gap-2">
+										{#if action.urls && action.urls.length > 0}
+											{#each action.urls as urlObj}
+												<Button variant="outline" href={urlObj.url} class="w-full"
+													>{urlObj.label}</Button
+												>
+											{/each}
+										{:else}
+											<Button variant="outline" href="#" class="w-full">Open</Button>
+										{/if}
+									</div>
 								</CardFooter>
 							</Card>
 						{/each}
