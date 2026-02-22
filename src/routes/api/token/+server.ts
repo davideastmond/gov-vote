@@ -59,7 +59,7 @@ export const POST: RequestHandler = async (event) => {
 
 	// Grant token to the user if they are eligible to vote in at least one contest in the contest group.
 	// We can determine this based on the eligibility data we just queried from the database.
-	// If the user is eligible, we will generate a token and store it in the database associated with the user and the contest group.
+	// If the user is eligible, we will generate a token
 	// If the user is not eligible, we will return an error message.
 
 	if (eligibilityData.length === 0) {
