@@ -174,7 +174,6 @@ async function createVoterCardFromEligibility(userIds: Set<string>, contestGroup
 					id: crypto.randomUUID(),
 					userId,
 					contestGroupId,
-					cardStatus: 'generated',
 					cardCode: crypto.randomUUID()
 				});
 			}
