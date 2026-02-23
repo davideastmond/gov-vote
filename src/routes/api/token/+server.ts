@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
-import { contestGroup, user, voterCard, voterEligibility } from '$lib/server/db/schema';
+import { contest, contestGroup, user, voterCard, voterEligibility } from '$lib/server/db/schema';
 import { signJWT, verifyJWT } from '$lib/server/utils/jwt/jwt';
 import { tokenRequestValidator } from '$lib/validators/token-request.validator';
 import type { RequestHandler } from '@sveltejs/kit';
@@ -49,10 +49,18 @@ export const POST: RequestHandler = async (event) => {
 		)
 		.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
 		.innerJoin(
+			contest,
+			and(
+				eq(contest.contestGroupId, contestGroup.id),
+				or(eq(contest.contestStatus, 'upcoming'), eq(contest.contestStatus, 'active'))
+			)
+		)
+		.innerJoin(
 			voterEligibility,
 			and(
 				eq(voterEligibility.contestGroupId, contestGroup.id),
-				eq(voterEligibility.isEligible, true)
+				eq(voterEligibility.isEligible, true),
+				eq(voterEligibility.isComplete, false)
 			)
 		)
 		.innerJoin(user, eq(user.id, voterEligibility.userId));
