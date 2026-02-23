@@ -9,7 +9,7 @@
 
 	let voterCardCode = '';
 	let isLoading = false;
-	let error = '';
+	let error: null | string = null;
 
 	function formatUUID(value: string): string {
 		// Remove all non-hexadecimal characters and hyphens
@@ -37,19 +37,13 @@
 		voterCardCode = formatUUID(target.value);
 
 		if (error) {
-			error = '';
-		}
-	}
-
-	$: if (voterCardCode) {
-		if (error) {
-			error = '';
+			error = null;
 		}
 	}
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
-		error = '';
+		error = null;
 
 		const result = z.uuid().safeParse(voterCardCode);
 		if (!result.success) {
@@ -60,7 +54,6 @@
 		isLoading = true;
 
 		try {
-			// TODO: Troubleshoot this
 			const { ok } = await fetch('/api/token', {
 				method: 'POST',
 				headers: {
@@ -68,7 +61,12 @@
 				},
 				body: JSON.stringify({ voterCardCode: voterCardCode.toLowerCase() })
 			});
-			console.log('API response status:', ok);
+
+			if (!ok) {
+				error =
+					'We are not able to proceed with that Voter Card Code. Please check your code and try again, or contact your election office for assistance.';
+				return;
+			}
 			// expecting to get a token cookie set by the server, so we can just redirect to the ballot page
 			await goto('/voter/ballot');
 		} catch (err) {
