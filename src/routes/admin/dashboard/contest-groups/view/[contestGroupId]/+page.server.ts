@@ -14,10 +14,9 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const { contestGroupId } = params;
-	console.log('Loading contest group with ID:', contestGroupId);
 
 	// Contest group details - title and description and polling locations
-	const contestGroupBasics = await db
+	const contestGroupData = await db
 		.select({
 			contestGroupId: contestGroup.id,
 			contestGroupTitle: contestGroup.title,
@@ -31,12 +30,12 @@ export const load: PageServerLoad = async ({ params }) => {
 		})
 		.from(contestGroup)
 		.where(eq(contestGroup.id, contestGroupId))
-		.innerJoin(
+		.leftJoin(
 			contestGroupPollingStation,
 			eq(contestGroupPollingStation.contestGroupId, contestGroup.id)
 		)
-		.innerJoin(pollingStation, eq(pollingStation.id, contestGroupPollingStation.pollingStationId))
-		.innerJoin(address, eq(address.id, pollingStation.addressId));
+		.leftJoin(pollingStation, eq(pollingStation.id, contestGroupPollingStation.pollingStationId))
+		.leftJoin(address, eq(address.id, pollingStation.addressId));
 
 	const ballotContests = await db
 		.select({
@@ -53,7 +52,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		.innerJoin(contestItem, eq(contestItem.contestId, contest.id));
 
 	return {
-		contestGroupBasics: contestGroupBasics,
-		ballotContests: ballotContests
+		contestGroupData,
+		ballotContests: ballotContests,
+		contestGroupId: contestGroupId
 	};
 };
