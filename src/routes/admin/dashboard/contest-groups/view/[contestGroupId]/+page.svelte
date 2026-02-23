@@ -7,19 +7,21 @@
 	let { data } = $props();
 
 	// Extract contest group basic info from the first row (all rows have the same contest group data)
-	const contestGroupInfo = data.contestGroupBasics?.[0];
 
+	// svelte-ignore state_referenced_locally
+	const { contestGroupData, ballotContests } = data;
+	console.log('Contest Group Data:', contestGroupData);
 	// Group polling stations (deduplicate by polling station ID)
-	const pollingStations = data.contestGroupBasics?.reduce(
+	const pollingStations = contestGroupData?.reduce(
 		(acc, row) => {
 			if (!acc.find((ps) => ps.id === row.pollingStationId)) {
 				acc.push({
-					id: row.pollingStationId,
+					id: row.pollingStationId as string,
 					name: row.pollingStationName,
-					streetAddress: row.pollingStationStreetAddress,
-					city: row.pollingStationCity,
-					state: row.pollingStationState,
-					zipCode: row.pollingStationZipCode
+					streetAddress: row.pollingStationStreetAddress as string,
+					city: row.pollingStationCity as string,
+					state: row.pollingStationState as string,
+					zipCode: row.pollingStationZipCode as string
 				});
 			}
 			return acc;
@@ -35,7 +37,7 @@
 	);
 
 	// Group ballot contests by contest title
-	const contests = data.ballotContests?.reduce(
+	const contests = ballotContests?.reduce(
 		(acc, row) => {
 			let contest = acc.find((c) => c.title === row.contestTitle);
 			if (!contest) {
@@ -65,10 +67,15 @@
 			}>;
 		}>
 	);
+
+	function displayAttribute(value: string | null | undefined) {
+		if (!value || value.trim().length === 0) return 'not specified';
+		return value;
+	}
 </script>
 
 <svelte:head>
-	<title>{contestGroupInfo?.contestGroupTitle || 'Contest Group'} - Admin Dashboard</title>
+	<title>{contestGroupData[0]?.contestGroupTitle || 'Contest Group'} - Admin Dashboard</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
@@ -83,15 +90,22 @@
 					← Back to Dashboard
 				</a>
 				<h1 class="text-3xl font-bold text-[var(--text-primary)]">
-					{contestGroupInfo?.contestGroupTitle || 'Contest Group'}
+					{contestGroupData[0]?.contestGroupTitle || 'Contest Group'}
 				</h1>
-				{#if contestGroupInfo?.contestGroupDescription}
+				{#if contestGroupData[0]?.contestGroupDescription}
 					<p class="mt-1 text-[var(--text-secondary)]">
-						{contestGroupInfo.contestGroupDescription}
+						{contestGroupData[0].contestGroupDescription}
 					</p>
 				{/if}
 			</div>
-			<Button variant="outline">Edit Contest Group</Button>
+			{#if contestGroupData.length > 0}
+				<Button
+					variant="outline"
+					href={`/admin/dashboard/contest-groups/edit/${contestGroupData[0]?.contestGroupId}`}
+				>
+					Edit Contest Group</Button
+				>
+			{/if}
 		</div>
 
 		<!-- Polling Stations -->
@@ -103,14 +117,55 @@
 				{#if pollingStations && pollingStations.length > 0}
 					<div class="space-y-3">
 						{#each pollingStations as station}
-							<div class="rounded-md border p-3">
-								{#if station.name}
-									<p class="font-medium text-[var(--text-primary)]">{station.name}</p>
-								{/if}
-								<p class="text-sm text-[var(--text-secondary)]">
-									{station.streetAddress}, {station.city}, {station.state}
-									{station.zipCode}
-								</p>
+							<div class="space-y-3 rounded-md border p-3">
+								<section class="space-y-1">
+									<p
+										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
+									>
+										Name
+									</p>
+									<p class="text-sm text-[var(--text-primary)]">
+										{displayAttribute(station.name)}
+									</p>
+								</section>
+								<section class="space-y-1">
+									<p
+										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
+									>
+										Street Address
+									</p>
+									<p class="text-sm text-[var(--text-primary)]">
+										{displayAttribute(station.streetAddress)}
+									</p>
+								</section>
+								<section class="space-y-1">
+									<p
+										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
+									>
+										City
+									</p>
+									<p class="text-sm text-[var(--text-primary)]">{displayAttribute(station.city)}</p>
+								</section>
+								<section class="space-y-1">
+									<p
+										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
+									>
+										State
+									</p>
+									<p class="text-sm text-[var(--text-primary)]">
+										{displayAttribute(station.state)}
+									</p>
+								</section>
+								<section class="space-y-1">
+									<p
+										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
+									>
+										Zip Code
+									</p>
+									<p class="text-sm text-[var(--text-primary)]">
+										{displayAttribute(station.zipCode)}
+									</p>
+								</section>
 							</div>
 						{/each}
 					</div>
