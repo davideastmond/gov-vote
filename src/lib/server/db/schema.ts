@@ -6,6 +6,7 @@ export const contestItemTypeEnum = pgEnum('contest_item_type', [
 	'initiative',
 	'other'
 ]);
+export const contestStatusEnum = pgEnum('contest_status', ['upcoming', 'active', 'closed']);
 
 export const cardStatusState = pgEnum('card_status', ['generated', 'active', 'inactive']);
 
@@ -74,6 +75,7 @@ export const contest = pgTable('contest', {
 		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
 	description: text('description'),
+	contestStatus: contestStatusEnum().notNull().default('upcoming'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
