@@ -10,7 +10,7 @@
 
 	// svelte-ignore state_referenced_locally
 	const { contestGroupData, ballotContests } = data;
-	console.log('Contest Group Data:', contestGroupData);
+
 	// Group polling stations (deduplicate by polling station ID)
 	const pollingStations = contestGroupData?.reduce(
 		(acc, row) => {
