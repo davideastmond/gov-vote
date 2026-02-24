@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
-	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import type { UserRole } from '$lib/definitions/user.js';
@@ -8,12 +7,7 @@
 	const { data } = $props();
 	// Placeholder role. Replace with real auth data when available.
 	const userRole: Omit<UserRole, 'voter'> = data?.session?.user?.role || 'admin';
-	type SuperAdminAction = {
-		id: string;
-		label: string;
-		description: string;
-		urls?: { label: string; url: string }[];
-	};
+
 	const superAdminActions = [
 		{
 			id: 'manage-admins',
@@ -69,16 +63,6 @@
 					Manage contest groups, monitor activity, and administer settings.
 				</p>
 			</div>
-			<Card class="min-w-[200px]">
-				<CardHeader class="pb-2">
-					<CardTitle class="text-sm text-muted-foreground">Signed in as</CardTitle>
-				</CardHeader>
-				<CardContent class="pt-0">
-					<Badge variant="secondary" class="capitalize">
-						{userRole}
-					</Badge>
-				</CardContent>
-			</Card>
 		</header>
 		{#if userRole === 'super_admin'}
 			<Card>
