@@ -44,7 +44,6 @@ export const createContestGroup = command(
 		}
 
 		const { id, title, description, adminIds, contests, pollingStationAddresses } = data;
-		console.log('Creating contest group with data:', data);
 		// Create the contest group.
 		try {
 			const newContestGroup = await db
