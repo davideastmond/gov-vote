@@ -47,7 +47,13 @@ export const load: PageServerLoad = async (event) => {
 			)
 		)
 		.innerJoin(user, eq(user.id, voterEligibility.userId))
-		.innerJoin(contest, eq(contest.id, voterEligibility.contestId))
+		.innerJoin(
+			contest,
+			and(
+				eq(contest.id, voterEligibility.contestId),
+				or(eq(contest.contestStatus, 'upcoming'), eq(contest.contestStatus, 'active'))
+			)
+		)
 		.innerJoin(contestItem, eq(contestItem.contestId, contest.id));
 
 	const contests = normalizeBallotRows(ballotData);
