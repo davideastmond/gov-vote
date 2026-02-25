@@ -1,7 +1,7 @@
 import { verifyJWT } from '$lib/server/utils/jwt/jwt';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { handle as authJjHandle } from './lib/auth/auth';
+import { handle as authJSHandle } from './lib/auth/auth';
 
 const jwtHandler: Handle = async ({ event, resolve }) => {
 	const baseTokenPath = ['/api/token', '/api/voter'];
@@ -20,4 +20,4 @@ const jwtHandler: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handle = sequence(authJjHandle, jwtHandler);
+export const handle = sequence(authJSHandle, jwtHandler);
