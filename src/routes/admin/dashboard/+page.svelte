@@ -13,7 +13,8 @@
 			id: 'manage-admins',
 			label: 'Manage Admins',
 			description: 'Create, edit, and deactivate admin accounts',
-			urls: [{ label: 'Manage Admins', url: '/admin/dashboard/admins/manage' }]
+			urls: [{ label: 'Manage Admins', url: '/admin/dashboard/admins/manage' }],
+			accessLevel: ['super_admin']
 		},
 		{
 			id: 'create-polling-stations',
@@ -25,19 +26,22 @@
 					label: 'Create Polling Stations',
 					url: '/admin/dashboard/polling-stations/create'
 				}
-			]
+			],
+			accessLevel: ['admin', 'super_admin']
 		},
 		{
 			id: 'contest-groups',
 			label: 'Contest Groups',
 			description: 'Search, view, create election contest groups',
-			urls: [{ label: 'View Contest Groups', url: '/admin/dashboard/contest-groups/view' }]
+			urls: [{ label: 'View Contest Groups', url: '/admin/dashboard/contest-groups/view' }],
+			accessLevel: ['admin', 'super_admin']
 		},
 		{
 			id: 'create-voters',
 			label: 'Create Voters',
 			description: 'Batch add new voters to the system via JSON upload',
-			urls: [{ label: 'Create Voters', url: '/admin/dashboard/voters/create' }]
+			urls: [{ label: 'Create Voters', url: '/admin/dashboard/voters/create' }],
+			accessLevel: ['admin', 'super_admin']
 		},
 		{
 			id: 'create-voter-eligibility',
@@ -45,7 +49,8 @@
 			description: 'Batch create voter eligibility records via JSON upload',
 			urls: [
 				{ label: 'Create Voter Eligibility', url: '/admin/dashboard/voter-eligibility/create' }
-			]
+			],
+			accessLevel: ['admin', 'super_admin']
 		}
 	];
 </script>
@@ -67,32 +72,34 @@
 		{#if userRole === 'super_admin'}
 			<Card>
 				<CardHeader>
-					<CardTitle>Super Admin Options</CardTitle>
+					<CardTitle>Admin Options</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 						{#each adminActions as adminAction}
-							<Card class="h-full">
-								<CardHeader class="pb-3">
-									<CardTitle class="text-base">{adminAction.label}</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<p class="text-sm text-[var(--text-secondary)]">{adminAction.description}</p>
-								</CardContent>
-								<CardFooter>
-									<div class="flex w-full flex-col gap-2">
-										{#if adminAction.urls && adminAction.urls.length > 0}
-											{#each adminAction.urls as urlObj}
-												<Button variant="outline" href={urlObj.url} class="w-full"
-													>{urlObj.label}</Button
-												>
-											{/each}
-										{:else}
-											<Button variant="outline" href="#" class="w-full">Open</Button>
-										{/if}
-									</div>
-								</CardFooter>
-							</Card>
+							{#if adminAction.accessLevel.includes(userRole as string)}
+								<Card class="h-full">
+									<CardHeader class="pb-3">
+										<CardTitle class="text-base">{adminAction.label}</CardTitle>
+									</CardHeader>
+									<CardContent>
+										<p class="text-sm text-[var(--text-secondary)]">{adminAction.description}</p>
+									</CardContent>
+									<CardFooter>
+										<div class="flex w-full flex-col gap-2">
+											{#if adminAction.urls && adminAction.urls.length > 0}
+												{#each adminAction.urls as urlObj}
+													<Button variant="outline" href={urlObj.url} class="w-full"
+														>{urlObj.label}</Button
+													>
+												{/each}
+											{:else}
+												<Button variant="outline" href="#" class="w-full">Open</Button>
+											{/if}
+										</div>
+									</CardFooter>
+								</Card>
+							{/if}
 						{/each}
 					</div>
 				</CardContent>
