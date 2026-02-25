@@ -19,6 +19,21 @@
 		if (status === 'closed') return 'outline';
 		return 'outline';
 	}
+
+	function formatPollingStationAddress(
+		streetAddress: string,
+		city: string,
+		state: string,
+		zipCode: string
+	) {
+		return `${streetAddress}, ${city}, ${state} ${zipCode}`;
+	}
+
+	function confirmDeletePollingStation(event: Event) {
+		if (!window.confirm('Remove this polling station from the contest group?')) {
+			event.preventDefault();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -104,6 +119,84 @@
 						<Button type="submit">Add Contest</Button>
 					</div>
 				</form>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
+				<CardTitle>Polling Stations</CardTitle>
+			</CardHeader>
+			<CardContent class="space-y-5">
+				<div class="space-y-3">
+					<div class="flex items-center justify-between">
+						<h2 class="text-lg font-semibold text-(--text-primary)">Associated Stations</h2>
+						<Badge variant="secondary">{data.pollingStations.length}</Badge>
+					</div>
+					{#if data.pollingStations.length === 0}
+						<p class="text-sm text-(--text-secondary)">
+							No polling stations are associated with this contest group yet.
+						</p>
+					{:else}
+						<div class="space-y-2">
+							{#each data.pollingStations as station}
+								<div
+									class="flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-3"
+								>
+									<div class="space-y-1">
+										<p class="font-medium text-(--text-primary)">
+											{station.name || 'Unnamed Polling Station'}
+										</p>
+										<p class="text-sm text-(--text-secondary)">
+											{formatPollingStationAddress(
+												station.streetAddress,
+												station.city,
+												station.state,
+												station.zipCode
+											)}
+										</p>
+									</div>
+									<form
+										method="POST"
+										action="?/deletePollingStation"
+										onsubmit={confirmDeletePollingStation}
+									>
+										<input type="hidden" name="associationId" value={station.associationId} />
+										<Button type="submit" variant="outline">Delete</Button>
+									</form>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+
+				<div class="space-y-3 rounded-md border p-3">
+					<h3 class="text-base font-semibold text-(--text-primary)">Add Polling Station</h3>
+					<form method="POST" action="?/addPollingStation" class="grid gap-3 md:grid-cols-2">
+						<div class="space-y-2 md:col-span-2">
+							<Label for="new-polling-station-name">Polling station name</Label>
+							<Input id="new-polling-station-name" name="name" required />
+						</div>
+						<div class="space-y-2 md:col-span-2">
+							<Label for="new-polling-station-street">Street address</Label>
+							<Input id="new-polling-station-street" name="streetAddress" required />
+						</div>
+						<div class="space-y-2">
+							<Label for="new-polling-station-city">City</Label>
+							<Input id="new-polling-station-city" name="city" required />
+						</div>
+						<div class="space-y-2">
+							<Label for="new-polling-station-state">State</Label>
+							<Input id="new-polling-station-state" name="state" required />
+						</div>
+						<div class="space-y-2">
+							<Label for="new-polling-station-zip">Zip code</Label>
+							<Input id="new-polling-station-zip" name="zipCode" required />
+						</div>
+						<div class="self-end">
+							<Button type="submit">Add Polling Station</Button>
+						</div>
+					</form>
+				</div>
 			</CardContent>
 		</Card>
 

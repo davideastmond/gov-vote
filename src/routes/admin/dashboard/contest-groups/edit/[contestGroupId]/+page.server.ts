@@ -1,5 +1,12 @@
 import { db } from '$lib/server/db';
-import { contest, contestGroup, contestItem } from '$lib/server/db/schema';
+import {
+	address,
+	contest,
+	contestGroup,
+	contestGroupPollingStation,
+	contestItem,
+	pollingStation
+} from '$lib/server/db/schema';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
@@ -54,9 +61,26 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		items: allItems.filter((item) => item.contestId === contestEl.id)
 	}));
 
+	const pollingStations = await db
+		.select({
+			associationId: contestGroupPollingStation.id,
+			id: pollingStation.id,
+			name: pollingStation.name,
+			streetAddress: address.streetAddress,
+			city: address.city,
+			state: address.state,
+			zipCode: address.zipCode,
+			createdAt: pollingStation.createdAt
+		})
+		.from(contestGroupPollingStation)
+		.innerJoin(pollingStation, eq(pollingStation.id, contestGroupPollingStation.pollingStationId))
+		.innerJoin(address, eq(address.id, pollingStation.addressId))
+		.where(eq(contestGroupPollingStation.contestGroupId, params.contestGroupId));
+
 	return {
 		contestGroup: group,
-		contests: contestsWithItems
+		contests: contestsWithItems,
+		pollingStations
 	};
 };
 
@@ -163,6 +187,119 @@ export const actions: Actions = {
 			action: 'addContest',
 			success: true,
 			message: 'Contest added to group.'
+		};
+	},
+
+	addPollingStation: async ({ request, params, locals }) => {
+		await assertAdmin(locals);
+
+		const formData = await request.formData();
+		const name = getString(formData, 'name');
+		const streetAddress = getString(formData, 'streetAddress');
+		const city = getString(formData, 'city');
+		const state = getString(formData, 'state');
+		const zipCode = getString(formData, 'zipCode');
+
+		if (!name || !streetAddress || !city || !state || !zipCode) {
+			return fail(400, {
+				action: 'addPollingStation',
+				success: false,
+				message: 'Polling station name and full address are required.'
+			});
+		}
+
+		const foundAddress = await db.query.address.findFirst({
+			where: (addr, { and, eq }) =>
+				and(
+					eq(addr.streetAddress, streetAddress),
+					eq(addr.city, city),
+					eq(addr.state, state),
+					eq(addr.zipCode, zipCode)
+				)
+		});
+
+		const addressId = foundAddress?.id ?? crypto.randomUUID();
+
+		if (!foundAddress) {
+			await db.insert(address).values({
+				id: addressId,
+				streetAddress,
+				city,
+				state,
+				zipCode
+			});
+		}
+
+		const foundPollingStation = await db.query.pollingStation.findFirst({
+			where: (ps, { and, eq }) => and(eq(ps.addressId, addressId), eq(ps.name, name))
+		});
+
+		const pollingStationId = foundPollingStation?.id ?? crypto.randomUUID();
+
+		if (!foundPollingStation) {
+			await db.insert(pollingStation).values({
+				id: pollingStationId,
+				name,
+				addressId
+			});
+		}
+
+		const existingAssociation = await db.query.contestGroupPollingStation.findFirst({
+			where: (association, { and, eq }) =>
+				and(
+					eq(association.contestGroupId, params.contestGroupId),
+					eq(association.pollingStationId, pollingStationId)
+				)
+		});
+
+		if (existingAssociation) {
+			return {
+				action: 'addPollingStation',
+				success: true,
+				message: 'Polling station is already associated with this contest group.'
+			};
+		}
+
+		await db.insert(contestGroupPollingStation).values({
+			id: crypto.randomUUID(),
+			contestGroupId: params.contestGroupId,
+			pollingStationId
+		});
+
+		return {
+			action: 'addPollingStation',
+			success: true,
+			message: 'Polling station added to contest group.'
+		};
+	},
+
+	deletePollingStation: async ({ request, params, locals }) => {
+		await assertAdmin(locals);
+
+		const formData = await request.formData();
+		const associationId = getString(formData, 'associationId');
+
+		if (!associationId) {
+			return fail(400, {
+				action: 'deletePollingStation',
+				success: false,
+				message: 'Polling station association id is required.'
+			});
+		}
+
+		await db
+			.delete(contestGroupPollingStation)
+			.where(
+				and(
+					eq(contestGroupPollingStation.id, associationId),
+					eq(contestGroupPollingStation.contestGroupId, params.contestGroupId)
+				)
+			);
+
+		return {
+			action: 'deletePollingStation',
+			success: true,
+			message: 'Polling station removed from contest group.'
 		};
 	},
 
