@@ -8,7 +8,7 @@
 	// Placeholder role. Replace with real auth data when available.
 	const userRole: Omit<UserRole, 'voter'> = data?.session?.user?.role || 'admin';
 
-	const superAdminActions = [
+	const adminActions = [
 		{
 			id: 'manage-admins',
 			label: 'Manage Admins',
@@ -71,18 +71,18 @@
 				</CardHeader>
 				<CardContent>
 					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{#each superAdminActions as action}
+						{#each adminActions as adminAction}
 							<Card class="h-full">
 								<CardHeader class="pb-3">
-									<CardTitle class="text-base">{action.label}</CardTitle>
+									<CardTitle class="text-base">{adminAction.label}</CardTitle>
 								</CardHeader>
 								<CardContent>
-									<p class="text-sm text-[var(--text-secondary)]">{action.description}</p>
+									<p class="text-sm text-[var(--text-secondary)]">{adminAction.description}</p>
 								</CardContent>
 								<CardFooter>
 									<div class="flex w-full flex-col gap-2">
-										{#if action.urls && action.urls.length > 0}
-											{#each action.urls as urlObj}
+										{#if adminAction.urls && adminAction.urls.length > 0}
+											{#each adminAction.urls as urlObj}
 												<Button variant="outline" href={urlObj.url} class="w-full"
 													>{urlObj.label}</Button
 												>
