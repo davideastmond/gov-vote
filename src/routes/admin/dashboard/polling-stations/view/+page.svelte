@@ -271,7 +271,9 @@
 	<div class="bg-white p-6 dark:bg-black">
 		<div class="mb-4 flex items-center justify-between">
 			<h2 class="text-xl font-semibold">Edit Polling Station</h2>
-			<Button type="button" variant="outline" size="sm" onclick={closeEditModal}>Close</Button>
+			<Button type="button" variant="outline" size="sm" onclick={() => closeEditModal()}
+				>Close</Button
+			>
 		</div>
 		<form method="POST" action="?/updatePollingStation" class="space-y-4">
 			<input type="hidden" name="pollingStationId" value={editingStationId} />
@@ -303,7 +305,7 @@
 				</div>
 			</div>
 			<div class="flex justify-end gap-2 pt-2">
-				<Button type="button" variant="outline" onclick={closeEditModal}>Cancel</Button>
+				<Button type="button" variant="outline" onclick={() => closeEditModal()}>Cancel</Button>
 				<Button type="submit">Save Changes</Button>
 			</div>
 		</form>
