@@ -8,11 +8,6 @@ import { json } from '@sveltejs/kit';
 import { and, eq, or } from 'drizzle-orm';
 import z from 'zod';
 
-// This endpoint is for generating tokens for users to access the ballot.
-// This endpoint is hit when the user enters their voter card code on the ballot access page.
-// The server will validate the voter card code and generate a token if the code is valid.
-// These tokens will be stored in the database and associated with a user and a contest group.
-// When a user tries to access the ballot, they will need to provide a valid token.
 export const POST: RequestHandler = async (event) => {
 	// Validate the requestBody
 	const requestBody = (await event.request.json()) as { voterCardCode: string };
