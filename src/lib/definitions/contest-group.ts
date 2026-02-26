@@ -1,4 +1,5 @@
 export type ContestItemType = 'candidate' | 'initiative' | 'other';
+export type ContestStatus = 'upcoming' | 'active' | 'closed';
 
 export type ContestItem = {
 	id: string;
@@ -11,5 +12,6 @@ export type Contest = {
 	id: string;
 	title: string;
 	description: string;
+	contestStatus: ContestStatus;
 	items: ContestItem[];
 };
