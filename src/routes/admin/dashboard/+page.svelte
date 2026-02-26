@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import type { UserRole } from '$lib/definitions/user.js';
@@ -69,59 +68,40 @@
 				</p>
 			</div>
 		</header>
-		{#if userRole === 'super_admin'}
-			<Card>
-				<CardHeader>
-					<CardTitle>Admin Options</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{#each adminActions as adminAction}
-							{#if adminAction.accessLevel.includes(userRole as string)}
-								<Card class="h-full">
-									<CardHeader class="pb-3">
-										<CardTitle class="text-base">{adminAction.label}</CardTitle>
-									</CardHeader>
-									<CardContent>
-										<p class="text-sm text-[var(--text-secondary)]">{adminAction.description}</p>
-									</CardContent>
-									<CardFooter>
-										<div class="flex w-full flex-col gap-2">
-											{#if adminAction.urls && adminAction.urls.length > 0}
-												{#each adminAction.urls as urlObj}
-													<Button variant="outline" href={urlObj.url} class="w-full"
-														>{urlObj.label}</Button
-													>
-												{/each}
-											{:else}
-												<Button variant="outline" href="#" class="w-full">Open</Button>
-											{/if}
-										</div>
-									</CardFooter>
-								</Card>
-							{/if}
-						{/each}
-					</div>
-				</CardContent>
-			</Card>
-		{:else}
-			<Card>
-				<CardHeader>
-					<CardTitle>Admin Options</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<p class="mb-4 text-sm text-[var(--text-secondary)]">
-						Admin tools will appear here once configured.
-					</p>
-					<Alert>
-						<AlertTitle>Standard admin actions placeholder</AlertTitle>
-						<AlertDescription>
-							Placeholder for standard admin actions (e.g., review contests, update content, manage
-							voters).
-						</AlertDescription>
-					</Alert>
-				</CardContent>
-			</Card>
-		{/if}
+
+		<Card>
+			<CardHeader>
+				<CardTitle>Admin Options</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					{#each adminActions as adminAction}
+						{#if adminAction.accessLevel.includes(userRole as string)}
+							<Card class="h-full">
+								<CardHeader class="pb-3">
+									<CardTitle class="text-base">{adminAction.label}</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<p class="text-sm text-[var(--text-secondary)]">{adminAction.description}</p>
+								</CardContent>
+								<CardFooter>
+									<div class="flex w-full flex-col gap-2">
+										{#if adminAction.urls && adminAction.urls.length > 0}
+											{#each adminAction.urls as urlObj}
+												<Button variant="outline" href={urlObj.url} class="w-full"
+													>{urlObj.label}</Button
+												>
+											{/each}
+										{:else}
+											<Button variant="outline" href="#" class="w-full">Open</Button>
+										{/if}
+									</div>
+								</CardFooter>
+							</Card>
+						{/if}
+					{/each}
+				</div>
+			</CardContent>
+		</Card>
 	</div>
 </main>
