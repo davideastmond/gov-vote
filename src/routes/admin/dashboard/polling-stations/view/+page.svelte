@@ -1,11 +1,27 @@
 <script lang="ts">
+	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import type { PageData } from './$types';
+	import type { ActionData, PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	type PollingStationRow = PageData['pollingStations'][number];
+
+	let { data, form }: { data: PageData; form: ActionData } = $props();
+
+	let editDialog = $state<HTMLDialogElement | null>(null);
+	let editingStationId = $state('');
+	let editingName = $state('');
+	let editingStreetAddress = $state('');
+	let editingCity = $state('');
+	let editingState = $state('');
+	let editingZipCode = $state('');
+	let initialName = $state('');
+	let initialStreetAddress = $state('');
+	let initialCity = $state('');
+	let initialState = $state('');
+	let initialZipCode = $state('');
 
 	const searchInput = $derived(data.searchQuery);
 
@@ -32,6 +48,56 @@
 	): string {
 		return `${streetAddress}, ${city}, ${state} ${zipCode}`;
 	}
+
+	function openEditModal(station: PollingStationRow) {
+		editingStationId = station.id;
+		editingName = station.name ?? '';
+		editingStreetAddress = station.streetAddress;
+		editingCity = station.city;
+		editingState = station.state;
+		editingZipCode = station.zipCode;
+		initialName = editingName;
+		initialStreetAddress = editingStreetAddress;
+		initialCity = editingCity;
+		initialState = editingState;
+		initialZipCode = editingZipCode;
+		editDialog?.showModal();
+	}
+
+	function hasUnsavedChanges() {
+		return (
+			editingName !== initialName ||
+			editingStreetAddress !== initialStreetAddress ||
+			editingCity !== initialCity ||
+			editingState !== initialState ||
+			editingZipCode !== initialZipCode
+		);
+	}
+
+	function closeEditModal(force = false) {
+		if (!force && hasUnsavedChanges()) {
+			const shouldClose = window.confirm('Discard unsaved changes?');
+			if (!shouldClose) return;
+		}
+		editDialog?.close();
+	}
+
+	function onEditDialogCancel(event: Event) {
+		event.preventDefault();
+		closeEditModal();
+	}
+
+	function onEditDialogClick(event: MouseEvent) {
+		if (event.target === editDialog) {
+			closeEditModal();
+		}
+	}
+
+	$effect(() => {
+		if (form?.action === 'updatePollingStation' && form?.success && editDialog?.open) {
+			closeEditModal(true);
+		}
+	});
 </script>
 
 <svelte:head>
@@ -59,6 +125,13 @@
 				</Button>
 			</div>
 		</header>
+
+		{#if form?.message}
+			<Alert variant={form.success ? 'default' : 'destructive'} class="mb-6">
+				<AlertTitle>{form.success ? 'Success' : 'Update failed'}</AlertTitle>
+				<AlertDescription>{form.message}</AlertDescription>
+			</Alert>
+		{/if}
 
 		<section class="mb-8">
 			<Card>
@@ -127,6 +200,11 @@
 								<p class="text-sm text-(--text-secondary)">{formatDate(station.createdAt)}</p>
 							</div>
 						</CardContent>
+						<CardFooter>
+							<Button variant="outline" size="sm" onclick={() => openEditModal(station)}>
+								Edit
+							</Button>
+						</CardFooter>
 					</Card>
 				{/each}
 			</div>
@@ -183,3 +261,51 @@
 		{/if}
 	</div>
 </main>
+
+<dialog
+	bind:this={editDialog}
+	oncancel={onEditDialogCancel}
+	onclick={onEditDialogClick}
+	class="w-full max-w-xl rounded-lg border border-(--border-primary) bg-(--bg-primary) p-0 text-(--text-primary)"
+>
+	<div class="bg-white p-6 dark:bg-black">
+		<div class="mb-4 flex items-center justify-between">
+			<h2 class="text-xl font-semibold">Edit Polling Station</h2>
+			<Button type="button" variant="outline" size="sm" onclick={closeEditModal}>Close</Button>
+		</div>
+		<form method="POST" action="?/updatePollingStation" class="space-y-4">
+			<input type="hidden" name="pollingStationId" value={editingStationId} />
+			<div class="space-y-2">
+				<Label for="edit-name">Name</Label>
+				<Input id="edit-name" name="name" bind:value={editingName} />
+			</div>
+			<div class="space-y-2">
+				<Label for="edit-street-address">Street Address</Label>
+				<Input
+					id="edit-street-address"
+					name="streetAddress"
+					bind:value={editingStreetAddress}
+					required
+				/>
+			</div>
+			<div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+				<div class="space-y-2 md:col-span-1">
+					<Label for="edit-city">City</Label>
+					<Input id="edit-city" name="city" bind:value={editingCity} required />
+				</div>
+				<div class="space-y-2 md:col-span-1">
+					<Label for="edit-state">State</Label>
+					<Input id="edit-state" name="state" bind:value={editingState} required />
+				</div>
+				<div class="space-y-2 md:col-span-1">
+					<Label for="edit-zip-code">Zip Code</Label>
+					<Input id="edit-zip-code" name="zipCode" bind:value={editingZipCode} required />
+				</div>
+			</div>
+			<div class="flex justify-end gap-2 pt-2">
+				<Button type="button" variant="outline" onclick={closeEditModal}>Cancel</Button>
+				<Button type="submit">Save Changes</Button>
+			</div>
+		</form>
+	</div>
+</dialog>
