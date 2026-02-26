@@ -32,7 +32,13 @@
 			id: 'contest-groups',
 			label: 'Contest Groups',
 			description: 'Search, view, create election contest groups',
-			urls: [{ label: 'View Contest Groups', url: '/admin/dashboard/contest-groups/view' }],
+			urls: [
+				{ label: 'View Contest Groups', url: '/admin/dashboard/contest-groups/view' },
+				{
+					label: 'Create Contest Group',
+					url: '/admin/dashboard/contest-groups/create'
+				}
+			],
 			accessLevel: ['admin', 'super_admin']
 		},
 		{
