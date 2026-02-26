@@ -11,6 +11,7 @@ const validPayload = {
 			id: '22222222-2222-4222-8222-222222222222',
 			title: 'Mayor',
 			description: 'City mayor race',
+			contestStatus: 'active',
 			items: [
 				{
 					id: '33333333-3333-4333-8333-333333333333',
@@ -52,6 +53,19 @@ describe('createContestGroupValidator', () => {
 				{
 					...validPayload.contests[0],
 					items: []
+				}
+			]
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects when no contest is active', () => {
+		const result = createContestGroupValidator.safeParse({
+			...validPayload,
+			contests: [
+				{
+					...validPayload.contests[0],
+					contestStatus: 'upcoming'
 				}
 			]
 		});
