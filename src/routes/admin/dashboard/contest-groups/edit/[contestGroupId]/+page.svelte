@@ -246,17 +246,27 @@
 									</div>
 								</form>
 
-								<form method="POST" action="?/deactivateContest" class="self-end">
+								<form method="POST" action="?/updateContestStatus" class="space-y-2 self-end">
 									<input type="hidden" name="contestId" value={contestEl.id} />
-									<Button
-										type="submit"
-										variant="outline"
-										disabled={contestEl.contestStatus === 'closed'}
-									>
-										{contestEl.contestStatus === 'closed'
-											? 'Contest Inactive'
-											: 'Deactivate Contest'}
-									</Button>
+									<Label for={`contest-status-${contestEl.id}`}>Status</Label>
+									<div class="flex gap-2">
+										<select
+											id={`contest-status-${contestEl.id}`}
+											name="contestStatus"
+											class="flex h-9 w-35 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+										>
+											<option value="upcoming" selected={contestEl.contestStatus === 'upcoming'}>
+												upcoming
+											</option>
+											<option value="active" selected={contestEl.contestStatus === 'active'}>
+												active
+											</option>
+											<option value="closed" selected={contestEl.contestStatus === 'closed'}>
+												inactive
+											</option>
+										</select>
+										<Button type="submit" variant="outline">Save Status</Button>
+									</div>
 								</form>
 							</div>
 

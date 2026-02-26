@@ -134,29 +134,41 @@ export const actions: Actions = {
 		};
 	},
 
-	deactivateContest: async ({ request, params, locals }) => {
+	updateContestStatus: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
 
 		const formData = await request.formData();
 		const contestId = getString(formData, 'contestId');
+		const contestStatus = getString(formData, 'contestStatus');
 
-		if (!contestId) {
+		if (!contestId || !contestStatus) {
 			return fail(400, {
-				action: 'deactivateContest',
+				action: 'updateContestStatus',
 				success: false,
-				message: 'Contest id is required.'
+				message: 'Contest id and status are required.'
+			});
+		}
+
+		if (!['upcoming', 'active', 'closed'].includes(contestStatus)) {
+			return fail(400, {
+				action: 'updateContestStatus',
+				success: false,
+				message: 'Invalid contest status.'
 			});
 		}
 
 		await db
 			.update(contest)
-			.set({ contestStatus: 'closed', updatedAt: new Date() })
+			.set({
+				contestStatus: contestStatus as 'upcoming' | 'active' | 'closed',
+				updatedAt: new Date()
+			})
 			.where(and(eq(contest.id, contestId), eq(contest.contestGroupId, params.contestGroupId)));
 
 		return {
-			action: 'deactivateContest',
+			action: 'updateContestStatus',
 			success: true,
-			message: 'Contest deactivated.'
+			message: 'Contest status updated.'
 		};
 	},
 
