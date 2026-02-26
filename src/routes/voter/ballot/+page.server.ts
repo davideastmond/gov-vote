@@ -32,12 +32,7 @@ export const load: PageServerLoad = async (event) => {
 	const ballotData = await db
 		.select()
 		.from(voterCard)
-		.where(
-			and(
-				eq(voterCard.cardCode, sub),
-				or(eq(voterCard.cardStatus, 'active'), eq(voterCard.cardStatus, 'generated'))
-			)
-		)
+		.where(and(eq(voterCard.cardCode, sub), eq(voterCard.cardStatus, 'active')))
 		.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
 		.innerJoin(
 			voterEligibility,
