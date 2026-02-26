@@ -1,6 +1,6 @@
 import { command, getRequestEvent } from '$app/server';
 import { db } from '$lib/server/db';
-import { voterCard, voterChoice, voterEligibility } from '$lib/server/db/schema';
+import { contest, voterCard, voterChoice, voterEligibility } from '$lib/server/db/schema';
 import { verifyJWT } from '$lib/server/utils/jwt/jwt';
 import { submittedBallotValidator } from '$lib/validators/submitted-ballet.validator';
 import { and, eq, inArray } from 'drizzle-orm';
@@ -73,6 +73,10 @@ export const submitVoterBallot = command(
 					eq(voterEligibility.isEligible, true),
 					eq(voterEligibility.isComplete, false)
 				)
+			)
+			.innerJoin(
+				contest,
+				and(eq(contest.id, voterEligibility.contestId), eq(contest.contestStatus, 'active'))
 			);
 
 		for await (const rec of Object.entries(ballotData)) {
@@ -87,7 +91,7 @@ export const submitVoterBallot = command(
 
 			// Sanity and security check - it may not be necessary
 			const matchingEligibilityRecord = voterEligibilitiesForThisCard.find(
-				(eligibility) => eligibility.contestId === contestId
+				(eligibility) => eligibility.voter_eligibility.contestId === contestId
 			);
 			if (!matchingEligibilityRecord) {
 				// This shouldn't happen.
@@ -113,7 +117,7 @@ export const submitVoterBallot = command(
 			.where(
 				inArray(
 					voterEligibility.id,
-					voterEligibilitiesForThisCard.map((rec) => rec.id)
+					voterEligibilitiesForThisCard.map((rec) => rec.voter_eligibility.id)
 				)
 			);
 
