@@ -8,7 +8,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
 	import type { PollingStationAddress } from '$lib/definitions/address';
-	import type { Contest, ContestItemType } from '$lib/definitions/contest-group';
+	import type { Contest, ContestItemType, ContestStatus } from '$lib/definitions/contest-group';
 	import type { Admin } from '$lib/definitions/user';
 	import { createContestGroup } from '$lib/remotes/create-contest-group.remote';
 	import { getAdmins } from '$lib/remotes/get-admins.remote';
@@ -21,6 +21,7 @@
 	];
 
 	const contestItemTypes: ContestItemType[] = ['candidate', 'initiative', 'other'];
+	const contestStatuses: ContestStatus[] = ['upcoming', 'active', 'closed'];
 
 	let currentStep = $state(1);
 	let title = $state('');
@@ -86,15 +87,24 @@
 				id: crypto.randomUUID(),
 				title: '',
 				description: '',
+				contestStatus: 'upcoming',
 				items: []
 			}
 		];
 	}
 
-	function updateContestField(contestId: string, field: 'title' | 'description', value: string) {
-		contests = contests.map((contest) =>
-			contest.id === contestId ? { ...contest, [field]: value } : contest
-		);
+	function updateContestField(
+		contestId: string,
+		field: 'title' | 'description' | 'contestStatus',
+		value: string | ContestStatus
+	) {
+		contests = contests.map((contest) => {
+			if (contest.id !== contestId) return contest;
+			if (field === 'contestStatus') {
+				return { ...contest, contestStatus: value as ContestStatus };
+			}
+			return { ...contest, [field]: value };
+		});
 	}
 
 	function removeContest(contestId: string) {
@@ -452,6 +462,25 @@
 														)}
 												></textarea>
 											</div>
+											<div class="space-y-2">
+												<Label>Contest Status</Label>
+												<select
+													class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base shadow-xs transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none md:text-sm"
+													value={contest.contestStatus}
+													onchange={(event) =>
+														updateContestField(
+															contest.id,
+															'contestStatus',
+															(event.currentTarget as HTMLSelectElement).value as ContestStatus
+														)}
+												>
+													{#each contestStatuses as option}
+														<option value={option}>
+															{option === 'closed' ? 'inactive' : option}
+														</option>
+													{/each}
+												</select>
+											</div>
 										</div>
 										<div class="mt-5 space-y-3">
 											<div class="flex flex-wrap items-center justify-between gap-3">
@@ -727,6 +756,11 @@
 												</p>
 												<p class="text-xs text-[var(--text-secondary)]">
 													{contest.description || 'No description provided.'}
+												</p>
+												<p class="mt-2 text-xs text-[var(--text-secondary)]">
+													Status: {contest.contestStatus === 'closed'
+														? 'inactive'
+														: contest.contestStatus}
 												</p>
 												<p class="mt-2 text-xs text-[var(--text-secondary)]">
 													{contest.items.length} item{contest.items.length !== 1 ? 's' : ''}

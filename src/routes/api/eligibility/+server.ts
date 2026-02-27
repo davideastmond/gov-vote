@@ -114,7 +114,11 @@ async function processEligibilityEntries(entries: EligibilityEntry[]): Promise<{
 		}
 		if (!encounteredContestIds.has(et.contestId)) {
 			const fndContest = await db.query.contest.findFirst({
-				where: (c, { eq }) => eq(c.id, et.contestId)
+				where: (c, { eq, and, or }) =>
+					and(
+						eq(c.id, et.contestId),
+						or(eq(c.contestStatus, 'upcoming'), eq(c.contestStatus, 'active'))
+					)
 			});
 			if (!fndContest) {
 				throw new Error(`Contest with ID ${et.contestId} does not exist.`);
@@ -174,7 +178,6 @@ async function createVoterCardFromEligibility(userIds: Set<string>, contestGroup
 					id: crypto.randomUUID(),
 					userId,
 					contestGroupId,
-					cardStatus: 'generated',
 					cardCode: crypto.randomUUID()
 				});
 			}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -24,6 +24,7 @@
 
 		try {
 			const { error } = await signIn('credentials', { redirect: false, username, password });
+			await invalidateAll();
 			if (error) {
 				requestError = 'Invalid username or password. Please try again.';
 				return;

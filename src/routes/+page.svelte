@@ -30,7 +30,7 @@
 			</p>
 		</div>
 
-		<div class="flex flex-wrap justify-center gap-5 sm:w-full sm:flex-col">
+		<div class="flex max-w-[1200px] flex-wrap justify-center gap-5 sm:w-full sm:flex-col">
 			<a
 				href="/admin/login"
 				class="inline-flex cursor-pointer items-center gap-3 rounded-lg border-2 border-blue-500 bg-blue-500 px-8 py-4 text-center text-[1.0625rem] font-semibold text-white no-underline outline-offset-1 transition-all hover:-translate-y-0.5 hover:border-blue-800 hover:bg-blue-800 hover:shadow-[0_8px_16px_rgba(59,130,246,0.3)] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-blue-500 active:translate-y-0 sm:w-full sm:justify-center dark:border-blue-400 dark:bg-blue-400 dark:text-gray-900 dark:hover:border-blue-500 dark:hover:bg-blue-500 dark:focus-visible:outline-blue-400"

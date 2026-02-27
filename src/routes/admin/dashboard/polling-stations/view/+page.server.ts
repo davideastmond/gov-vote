@@ -1,8 +1,8 @@
 import { db } from '$lib/server/db';
 import { address, pollingStation } from '$lib/server/db/schema';
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { eq, ilike, or } from 'drizzle-orm';
-import type { PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 
 const PAGE_SIZE = 12;
 
@@ -57,4 +57,70 @@ export const load: PageServerLoad = async (event) => {
 		totalPages,
 		totalCount
 	};
+};
+
+function getString(formData: FormData, field: string) {
+	return String(formData.get(field) ?? '').trim();
+}
+
+export const actions: Actions = {
+	updatePollingStation: async ({ request, locals }) => {
+		const session = await locals.auth();
+		if (!session || !['admin', 'super_admin'].includes(session.user?.role)) {
+			return redirect(302, '/admin/login');
+		}
+
+		const formData = await request.formData();
+		const pollingStationId = getString(formData, 'pollingStationId');
+		const name = getString(formData, 'name');
+		const streetAddress = getString(formData, 'streetAddress');
+		const city = getString(formData, 'city');
+		const state = getString(formData, 'state');
+		const zipCode = getString(formData, 'zipCode');
+
+		if (!pollingStationId || !streetAddress || !city || !state || !zipCode) {
+			return fail(400, {
+				action: 'updatePollingStation',
+				success: false,
+				message: 'Polling station id and full address are required.'
+			});
+		}
+
+		const foundPollingStation = await db.query.pollingStation.findFirst({
+			where: (ps, { eq }) => eq(ps.id, pollingStationId)
+		});
+
+		if (!foundPollingStation) {
+			return fail(404, {
+				action: 'updatePollingStation',
+				success: false,
+				message: 'Polling station not found.'
+			});
+		}
+
+		await db
+			.update(pollingStation)
+			.set({
+				name,
+				updatedAt: new Date()
+			})
+			.where(eq(pollingStation.id, pollingStationId));
+
+		await db
+			.update(address)
+			.set({
+				streetAddress,
+				city,
+				state,
+				zipCode,
+				updatedAt: new Date()
+			})
+			.where(eq(address.id, foundPollingStation.addressId));
+
+		return {
+			action: 'updatePollingStation',
+			success: true,
+			message: 'Polling station updated.'
+		};
+	}
 };

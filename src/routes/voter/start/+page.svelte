@@ -1,13 +1,15 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
+	import z from 'zod';
 
 	let voterCardCode = '';
 	let isLoading = false;
-	let error = '';
+	let error: null | string = null;
 
 	function formatUUID(value: string): string {
 		// Remove all non-hexadecimal characters and hyphens
@@ -35,40 +37,38 @@
 		voterCardCode = formatUUID(target.value);
 
 		if (error) {
-			error = '';
-		}
-	}
-
-	$: if (voterCardCode) {
-		if (error) {
-			error = '';
+			error = null;
 		}
 	}
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
-		error = '';
+		error = null;
 
-		if (!voterCardCode.trim()) {
-			error = 'Please enter your Voter Card Code';
+		const result = z.uuid().safeParse(voterCardCode);
+		if (!result.success) {
+			error = 'Invalid Voter Card Code';
 			return;
 		}
 
 		isLoading = true;
 
 		try {
-			// TODO: Replace with actual API call to validate voter card code
-			// const response = await fetch('/api/voter/validate', {
-			//   method: 'POST',
-			//   body: JSON.stringify({ voterCardCode });
-			// });
+			const { ok } = await fetch('/api/token', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ voterCardCode: voterCardCode.toLowerCase() })
+			});
 
-			// Placeholder: simulate API call
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
-			// Redirect to next step after validation
-			// window.location.href = `/voter/confirm?id=${encodeURIComponent(voterCardCode)}`;
-			console.log('Voter Card Code submitted:', voterCardCode);
+			if (!ok) {
+				error =
+					'We are not able to proceed with that Voter Card Code. Please check your code and try again, or contact your election office for assistance.';
+				return;
+			}
+			// expecting to get a token cookie set by the server, so we can just redirect to the ballot page
+			await goto('/voter/ballot');
 		} catch (err) {
 			error = 'An error occurred. Please try again.';
 			console.error(err);
@@ -101,7 +101,7 @@
 					<Input
 						id="voter-id-input"
 						type="text"
-						placeholder="Enter your UUID (e.g., XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)"
+						placeholder="Enter your Voter Card Code (e.g., XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)"
 						bind:value={voterCardCode}
 						oninput={handleVoterCodeInput}
 						disabled={isLoading}
