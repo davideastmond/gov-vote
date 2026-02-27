@@ -4,7 +4,7 @@
 	import type { UserRole } from '$lib/definitions/user.js';
 
 	const { data } = $props();
-	// Placeholder role. Replace with real auth data when available.
+
 	const userRole: Omit<UserRole, 'voter'> = data?.session?.user?.role || 'admin';
 
 	const adminActions = [
