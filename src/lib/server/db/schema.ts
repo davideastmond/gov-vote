@@ -9,6 +9,11 @@ export const contestItemTypeEnum = pgEnum('contest_item_type', [
 export const contestStatusEnum = pgEnum('contest_status', ['upcoming', 'active', 'closed']);
 
 export const cardStatusState = pgEnum('card_status', ['generated', 'active', 'inactive']);
+export const contestGroupStatusEnum = pgEnum('contest_group_status', [
+	'upcoming',
+	'active',
+	'closed'
+]);
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -63,6 +68,7 @@ export const contestGroup = pgTable('contest_group', {
 	id: text('id').primaryKey(),
 	title: text('title').notNull(),
 	description: text('description'),
+	contestGroupStatus: contestGroupStatusEnum().notNull().default('upcoming'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
