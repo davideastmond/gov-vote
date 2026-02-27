@@ -19,7 +19,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const session = await locals.auth();
 
 	// Contest group details - title and description and polling locations
-	// If user is super_admin, they can view any contest group. If user is admin, they can only view contest groups they are associated with. Otherwise, return 403.
+	// If user is super_admin, they can view any contest group.
+	// If user is admin, they can only view contest groups they are associated with.
 	const contestGroupData = await retrieveContestGroup(
 		session?.user.role as 'admin' | 'super_admin',
 		session?.user.id
