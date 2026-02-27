@@ -1,6 +1,6 @@
 import { command } from '$app/server';
 import type { PollingStationAddress } from '$lib/definitions/address';
-import type { Contest, ContestItemType } from '$lib/definitions/contest-group';
+import type { Contest, ContestItemType, ContestStatus } from '$lib/definitions/contest-group';
 import { db } from '$lib/server/db';
 import {
 	address,
@@ -44,7 +44,6 @@ export const createContestGroup = command(
 		}
 
 		const { id, title, description, adminIds, contests, pollingStationAddresses } = data;
-		console.log('Creating contest group with data:', data);
 		// Create the contest group.
 		try {
 			const newContestGroup = await db
@@ -77,6 +76,7 @@ async function writeContestDataToDb(contestGroupId: string, contests: Contest[])
 		contestGroupId: string;
 		title: string;
 		description?: string;
+		contestStatus: ContestStatus;
 	}[] = [];
 	const extractedContestItemsData: {
 		id: string;
@@ -91,7 +91,8 @@ async function writeContestDataToDb(contestGroupId: string, contests: Contest[])
 			id: contest.id,
 			contestGroupId: contestGroupId,
 			title: contest.title,
-			description: contest.description
+			description: contest.description,
+			contestStatus: contest.contestStatus
 		});
 
 		contest.items.forEach((item) => {

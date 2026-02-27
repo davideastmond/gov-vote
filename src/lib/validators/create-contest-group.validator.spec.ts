@@ -11,6 +11,7 @@ const validPayload = {
 			id: '22222222-2222-4222-8222-222222222222',
 			title: 'Mayor',
 			description: 'City mayor race',
+			contestStatus: 'active',
 			items: [
 				{
 					id: '33333333-3333-4333-8333-333333333333',
@@ -56,6 +57,39 @@ describe('createContestGroupValidator', () => {
 			]
 		});
 		expect(result.success).toBe(false);
+	});
+
+	it('rejects when no contest is active', () => {
+		const result = createContestGroupValidator.safeParse({
+			...validPayload,
+			contests: [
+				{
+					...validPayload.contests[0],
+					contestStatus: 'closed'
+				}
+			]
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("should not reject if there's at least one 'active' or 'upcoming' contest", () => {
+		const result = createContestGroupValidator.safeParse({
+			...validPayload,
+			contests: [
+				{
+					...validPayload.contests[0],
+					contestStatus: 'closed'
+				},
+				{
+					id: '44444444-4444-4444-8444-444444444444',
+					title: 'City Council',
+					description: 'City council race',
+					contestStatus: 'upcoming',
+					items: [...validPayload.contests[0].items]
+				}
+			]
+		});
+		expect(result.success).toBe(true);
 	});
 
 	it('rejects missing polling station addresses', () => {

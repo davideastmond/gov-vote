@@ -6,6 +6,10 @@ export const contestItemTypeEnum = pgEnum('contest_item_type', [
 	'initiative',
 	'other'
 ]);
+export const contestStatusEnum = pgEnum('contest_status', ['upcoming', 'active', 'closed']);
+
+export const cardStatusState = pgEnum('card_status', ['generated', 'active', 'inactive']);
+
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
 	username: text('username').notNull().unique(),
@@ -71,6 +75,7 @@ export const contest = pgTable('contest', {
 		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
 	description: text('description'),
+	contestStatus: contestStatusEnum().notNull().default('upcoming'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
@@ -157,7 +162,7 @@ export const voterCard = pgTable('voter_card', {
 	contestGroupId: text('contest_group_id')
 		.notNull()
 		.references(() => contestGroup.id, { onDelete: 'cascade' }),
-	cardStatus: text('card_status').notNull(), // e.g. 'issued', 'active', 'revoked'
+	cardStatus: cardStatusState().notNull().default('generated'), // This field can be used to track the status of the voter card (e.g. whether it has been generated, activated, or deactivated)
 	cardCode: text('card_code').notNull(), // This is the code that can be scanned at the polling station
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()

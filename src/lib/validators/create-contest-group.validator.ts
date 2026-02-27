@@ -21,10 +21,19 @@ const contestsValidator = z
 			id: z.uuid(),
 			title: z.string().min(1, 'Contest title is required'),
 			description: z.string().optional(),
+			contestStatus: z.enum(['upcoming', 'active', 'closed']),
 			items: z.array(contestItemsValidator).min(1, 'At least one contest item is required')
 		})
 	)
-	.min(1, 'At least one contest is required');
+	.min(1, 'At least one contest is required')
+	.refine(
+		(contests) =>
+			contests.some((contest) => ['active', 'upcoming'].includes(contest.contestStatus)),
+		{
+			message: 'At least one contest must be active or upcoming',
+			path: ['contests']
+		}
+	);
 
 const pollingStationAddressesValidator = z
 	.array(addressValidator)
