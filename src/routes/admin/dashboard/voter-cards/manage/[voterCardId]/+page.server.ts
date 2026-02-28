@@ -1,0 +1,122 @@
+import { db } from '$lib/server/db';
+import {
+	address,
+	adminContestGroup,
+	contestGroup,
+	user,
+	userAddress,
+	voterCard
+} from '$lib/server/db/schema';
+import { requireAdminSession } from '$lib/server/utils/require-admin-session';
+import {
+	normalizeVoterCardDetailRows,
+	type VoterCardDetailRow
+} from '$lib/server/utils/voter-card';
+import { error, fail } from '@sveltejs/kit';
+import { and, eq } from 'drizzle-orm';
+import type { Actions, PageServerLoad } from './$types';
+
+function getString(formData: FormData, field: string) {
+	return String(formData.get(field) ?? '').trim();
+}
+
+export const load: PageServerLoad = async ({ params, locals }) => {
+	const session = await requireAdminSession(locals);
+	const adminId = session.user.id as string;
+
+	const rows = await db
+		.select({
+			id: voterCard.id,
+			cardNumber: voterCard.cardCode,
+			status: voterCard.cardStatus,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			streetAddress: address.streetAddress,
+			city: address.city,
+			state: address.state,
+			zipCode: address.zipCode,
+			contestGroupId: contestGroup.id,
+			contestGroupName: contestGroup.title,
+			createdAt: voterCard.createdAt,
+			updatedAt: voterCard.updatedAt
+		})
+		.from(voterCard)
+		.innerJoin(user, eq(user.id, voterCard.userId))
+		.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
+		.leftJoin(userAddress, eq(userAddress.userId, user.id))
+		.leftJoin(address, eq(address.id, userAddress.addressId))
+		.leftJoin(
+			adminContestGroup,
+			and(
+				eq(adminContestGroup.contestGroupId, contestGroup.id),
+				eq(adminContestGroup.adminId, adminId)
+			)
+		)
+		.where(
+			and(
+				eq(voterCard.id, params.voterCardId),
+				session.user.role === 'admin' ? eq(adminContestGroup.adminId, adminId) : undefined
+			)
+		);
+
+	const voterCardDetails = normalizeVoterCardDetailRows(rows as VoterCardDetailRow[]);
+
+	if (!voterCardDetails) {
+		throw error(404, 'Voter card not found');
+	}
+
+	return {
+		voterCard: voterCardDetails
+	};
+};
+
+export const actions: Actions = {
+	updateStatus: async ({ request, params, locals }) => {
+		const session = await requireAdminSession(locals);
+		const adminId = session.user.id as string;
+
+		const formData = await request.formData();
+		const cardStatus = getString(formData, 'cardStatus');
+
+		if (!['generated', 'active', 'inactive'].includes(cardStatus)) {
+			return fail(400, {
+				action: 'updateStatus',
+				success: false,
+				message: 'Invalid voter card status.'
+			});
+		}
+
+		if (session.user.role === 'admin') {
+			const adminAccess = await db
+				.select({ id: voterCard.id })
+				.from(voterCard)
+				.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
+				.innerJoin(
+					adminContestGroup,
+					and(
+						eq(adminContestGroup.contestGroupId, contestGroup.id),
+						eq(adminContestGroup.adminId, adminId)
+					)
+				)
+				.where(eq(voterCard.id, params.voterCardId));
+
+			if (!adminAccess.length) {
+				throw error(404, 'Voter card not found');
+			}
+		}
+
+		await db
+			.update(voterCard)
+			.set({
+				cardStatus: cardStatus as 'generated' | 'active' | 'inactive',
+				updatedAt: new Date()
+			})
+			.where(eq(voterCard.id, params.voterCardId));
+
+		return {
+			action: 'updateStatus',
+			success: true,
+			message: 'Voter card status updated.'
+		};
+	}
+};
