@@ -173,13 +173,26 @@ async function createVoterCardFromEligibility(userIds: Set<string>, contestGroup
 				where: (vc, { and, eq }) =>
 					and(eq(vc.userId, userId), eq(vc.contestGroupId, contestGroupId))
 			});
+
 			if (!existingVoterCard) {
-				await db.insert(voterCard).values({
-					id: crypto.randomUUID(),
-					userId,
-					contestGroupId,
-					cardCode: crypto.randomUUID()
-				});
+				try {
+					await db.insert(voterCard).values({
+						id: crypto.randomUUID(),
+						userId,
+						contestGroupId,
+						cardCode: crypto.randomUUID(),
+						cardStatus: 'active'
+					});
+				} catch (err) {
+					console.error((err as Error).message);
+					console.error(
+						`Error creating voter card for user ${userId} and contest group ${contestGroupId}:`,
+						err
+					);
+					throw new Error(
+						`Failed to create voter card for user ${userId} and contest group ${contestGroupId}. Please check the server logs for more details.`
+					); // This error message will be returned to the client, so we want to make sure it's informative but not too technical.
+				}
 			}
 		}
 	}
