@@ -89,6 +89,44 @@
 
 		<Card>
 			<CardHeader>
+				<CardTitle>Contest Group Status</CardTitle>
+			</CardHeader>
+			<CardContent class="space-y-4">
+				<div class="flex items-center justify-between gap-4 rounded-md border p-3">
+					<p class="text-sm text-(--text-secondary)">Current status</p>
+					<Badge variant={statusVariant(data.contestGroup.contestGroupStatus)} class="capitalize"
+						>{statusLabel(data.contestGroup.contestGroupStatus)}</Badge
+					>
+				</div>
+				<form method="POST" action="?/updateGroupStatus" class="space-y-2">
+					<Label for="contest-group-status">Status</Label>
+					<div class="flex flex-wrap items-center gap-2">
+						<select
+							id="contest-group-status"
+							name="contestGroupStatus"
+							class="flex h-9 w-35 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+						>
+							<option
+								value="upcoming"
+								selected={data.contestGroup.contestGroupStatus === 'upcoming'}
+							>
+								upcoming
+							</option>
+							<option value="active" selected={data.contestGroup.contestGroupStatus === 'active'}>
+								active
+							</option>
+							<option value="closed" selected={data.contestGroup.contestGroupStatus === 'closed'}>
+								inactive
+							</option>
+						</select>
+						<Button type="submit" variant="outline">Save Status</Button>
+					</div>
+				</form>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
 				<CardTitle>Deactivate Contest Group</CardTitle>
 			</CardHeader>
 			<CardContent class="flex flex-col gap-4">

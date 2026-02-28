@@ -72,6 +72,17 @@
 		if (!value || value.trim().length === 0) return 'not specified';
 		return value;
 	}
+
+	function formatStatus(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+		if (!status) return 'Not specified';
+		return status.charAt(0).toUpperCase() + status.slice(1);
+	}
+
+	function statusVariant(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+		if (status === 'closed') return 'destructive' as const;
+		if (status === 'upcoming') return 'secondary' as const;
+		return 'default' as const;
+	}
 </script>
 
 <svelte:head>
@@ -107,6 +118,18 @@
 				>
 			{/if}
 		</div>
+
+		<!-- Status -->
+		<Card>
+			<CardHeader>
+				<CardTitle>Status</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<Badge variant={statusVariant(contestGroupData[0]?.contestGroupStatus)} class="capitalize">
+					{formatStatus(contestGroupData[0]?.contestGroupStatus)}
+				</Badge>
+			</CardContent>
+		</Card>
 
 		<!-- Polling Stations -->
 		<Card>

@@ -52,6 +52,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				.select({
 					contestGroupId: contestGroup.id,
 					contestGroupTitle: contestGroup.title,
+					contestGroupStatus: contestGroup.contestGroupStatus,
 					contestGroupDescription: contestGroup.description,
 					pollingStationId: pollingStation.id,
 					pollingStationName: pollingStation.name,
@@ -76,6 +77,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			.select({
 				contestGroupId: contestGroup.id,
 				contestGroupTitle: contestGroup.title,
+				contestGroupStatus: contestGroup.contestGroupStatus,
 				contestGroupDescription: contestGroup.description,
 				pollingStationId: pollingStation.id,
 				pollingStationName: pollingStation.name,
