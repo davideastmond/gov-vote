@@ -191,7 +191,7 @@ async function createVoterCardFromEligibility(userIds: Set<string>, contestGroup
 					);
 					throw new Error(
 						`Failed to create voter card for user ${userId} and contest group ${contestGroupId}. Please check the server logs for more details.`
-					); // This error message will be returned to the client, so we want to make sure it's informative but not too technical.
+					);
 				}
 			}
 		}
