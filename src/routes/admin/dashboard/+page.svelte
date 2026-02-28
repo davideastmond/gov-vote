@@ -56,6 +56,13 @@
 				{ label: 'Create Voter Eligibility', url: '/admin/dashboard/voter-eligibility/create' }
 			],
 			accessLevel: ['admin', 'super_admin']
+		},
+		{
+			id: 'voter-cards',
+			label: 'Voter Cards',
+			description: 'View and manage voter cards',
+			urls: [{ label: 'Manage Voter Cards', url: '/admin/dashboard/voter-cards/manage' }],
+			accessLevel: ['admin', 'super_admin']
 		}
 	];
 </script>
