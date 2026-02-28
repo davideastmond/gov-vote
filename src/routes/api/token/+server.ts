@@ -42,7 +42,13 @@ export const POST: RequestHandler = async (event) => {
 				or(eq(voterCard.cardStatus, 'active'), eq(voterCard.cardStatus, 'generated'))
 			)
 		)
-		.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
+		.innerJoin(
+			contestGroup,
+			and(
+				eq(contestGroup.id, voterCard.contestGroupId),
+				eq(contestGroup.contestGroupStatus, 'active')
+			)
+		)
 		.innerJoin(
 			contest,
 			and(
