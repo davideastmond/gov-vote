@@ -10,6 +10,7 @@
 		getVoterCardFullName,
 		getVoterCardStatusVariant
 	} from '$lib/utils/voter-card';
+	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -125,9 +126,19 @@
 										{getVoterCardFullName(card.firstName, card.lastName)}
 									</p>
 								</div>
-								<Badge variant={getVoterCardStatusVariant(card.status)} class="capitalize">
-									{formatVoterCardStatus(card.status)}
-								</Badge>
+								<div class="flex items-center gap-2">
+									<Badge variant={getVoterCardStatusVariant(card.status)} class="capitalize">
+										{formatVoterCardStatus(card.status)}
+									</Badge>
+									<Button
+										variant="outline"
+										size="icon-sm"
+										href="/admin/dashboard/voter-cards/manage/{card.id}"
+										aria-label="View voter card details"
+									>
+										<ChevronRightIcon class="size-4" />
+									</Button>
+								</div>
 							</div>
 						</CardHeader>
 						<CardContent class="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -142,15 +153,6 @@
 								</p>
 							</div>
 						</CardContent>
-						<CardFooter>
-							<Button
-								variant="outline"
-								size="sm"
-								href="/admin/dashboard/voter-cards/manage/{card.id}"
-							>
-								View Details
-							</Button>
-						</CardFooter>
 					</Card>
 				{/each}
 			</div>
