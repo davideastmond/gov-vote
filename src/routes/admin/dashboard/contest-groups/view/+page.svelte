@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -16,12 +17,15 @@
 		}
 	}
 
-	function formatDate(date: Date | string): string {
-		return new Date(date).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
+	function formatStatus(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+		if (!status) return 'Not specified';
+		return status.charAt(0).toUpperCase() + status.slice(1);
+	}
+
+	function statusVariant(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+		if (status === 'closed') return 'destructive' as const;
+		if (status === 'upcoming') return 'secondary' as const;
+		return 'default' as const;
 	}
 </script>
 
@@ -99,7 +103,15 @@
 					<a href="/admin/dashboard/contest-groups/view/{group.id}">
 						<Card class="transition-colors hover:bg-[var(--bg-secondary)]">
 							<CardHeader>
-								<CardTitle class="line-clamp-2">{group.title}</CardTitle>
+								<div class="flex items-start justify-between gap-2">
+									<CardTitle class="line-clamp-2">{group.title}</CardTitle>
+									<Badge
+										variant={statusVariant(group.contestGroupStatus)}
+										class="shrink-0 capitalize"
+									>
+										{formatStatus(group.contestGroupStatus)}
+									</Badge>
+								</div>
 							</CardHeader>
 							<CardContent class="flex flex-1 flex-col gap-3">
 								<div>

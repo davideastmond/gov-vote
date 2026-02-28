@@ -3,6 +3,7 @@
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { formatDate } from '$lib/utils/date';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -18,14 +19,6 @@
 
 	function getDisplayName(firstName: string, lastName: string): string {
 		return `${firstName} ${lastName}`;
-	}
-
-	function formatDate(date: Date | string): string {
-		return new Date(date).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 </script>
 

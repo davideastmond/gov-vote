@@ -4,6 +4,7 @@
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { formatDate } from '$lib/utils/date';
 	import type { ActionData, PageData } from './$types';
 
 	type PollingStationRow = PageData['pollingStations'][number];
@@ -30,14 +31,6 @@
 		if (form) {
 			form.submit();
 		}
-	}
-
-	function formatDate(date: Date | string): string {
-		return new Date(date).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 
 	function getFullAddress(
