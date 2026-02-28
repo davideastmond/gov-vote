@@ -7,15 +7,13 @@ import {
 	contestItem,
 	pollingStation
 } from '$lib/server/db/schema';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { requireAdminSession } from '$lib/server/utils/require-admin-session';
+import { error, fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 async function assertAdmin(locals: App.Locals) {
-	const session = await locals.auth();
-	if (!session || !['admin', 'super_admin'].includes(session.user?.role)) {
-		throw redirect(302, '/admin/login');
-	}
+	await requireAdminSession(locals);
 }
 
 function getString(formData: FormData, field: string) {
