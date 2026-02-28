@@ -116,6 +116,35 @@ export const actions: Actions = {
 		};
 	},
 
+	updateGroupStatus: async ({ request, params, locals }) => {
+		await assertAdmin(locals);
+
+		const formData = await request.formData();
+		const contestGroupStatus = getString(formData, 'contestGroupStatus');
+
+		if (!['upcoming', 'active', 'closed'].includes(contestGroupStatus)) {
+			return fail(400, {
+				action: 'updateGroupStatus',
+				success: false,
+				message: 'Invalid contest group status.'
+			});
+		}
+
+		await db
+			.update(contestGroup)
+			.set({
+				contestGroupStatus: contestGroupStatus as 'upcoming' | 'active' | 'closed',
+				updatedAt: new Date()
+			})
+			.where(eq(contestGroup.id, params.contestGroupId));
+
+		return {
+			action: 'updateGroupStatus',
+			success: true,
+			message: 'Contest group status updated.'
+		};
+	},
+
 	deactivateGroup: async ({ params, locals }) => {
 		await assertAdmin(locals);
 
