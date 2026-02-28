@@ -44,6 +44,7 @@
 				contest = {
 					title: row.contestTitle,
 					description: row.contestDescription,
+					status: row.contestStatus,
 					items: []
 				};
 				acc.push(contest);
@@ -59,6 +60,7 @@
 		[] as Array<{
 			title: string;
 			description: string | null;
+			status: 'upcoming' | 'active' | 'closed' | null;
 			items: Array<{
 				id: string;
 				title: string;
@@ -211,9 +213,12 @@
 								{#if idx > 0}
 									<Separator class="mb-6" />
 								{/if}
-								<h3 class="mb-1 text-lg font-semibold text-[var(--text-primary)]">
-									{contest.title}
-								</h3>
+								<div class="mb-1 flex items-center justify-between gap-3">
+									<h3 class="text-lg font-semibold text-[var(--text-primary)]">{contest.title}</h3>
+									<Badge variant={statusVariant(contest.status)} class="capitalize">
+										{formatStatus(contest.status)}
+									</Badge>
+								</div>
 								{#if contest.description}
 									<p class="mb-3 text-sm text-[var(--text-secondary)]">{contest.description}</p>
 								{/if}
