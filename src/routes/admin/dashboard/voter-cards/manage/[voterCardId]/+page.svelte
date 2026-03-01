@@ -10,9 +10,19 @@
 		getVoterCardFullName,
 		getVoterCardStatusVariant
 	} from '$lib/utils/voter-card';
+	import { VoterCardGenerator } from '$lib/utils/voter-card-generator';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+
+	async function handleTestGenerateAndPrint() {
+		const voterCardGenerator = new VoterCardGenerator(data.voterCard);
+		try {
+			await voterCardGenerator.generatePdf();
+		} catch (error) {
+			console.error('Error generating PDF:', error);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -49,6 +59,16 @@
 						<p class="mt-1 text-sm text-(--text-secondary)">
 							{getVoterCardFullName(data.voterCard.firstName, data.voterCard.lastName)}
 						</p>
+						<section class="space-y-1">
+							<p class="text-sm text-(--text-primary)">
+								{getVoterCardFullAddress(
+									data.voterCard.streetAddress,
+									data.voterCard.city,
+									data.voterCard.state,
+									data.voterCard.zipCode
+								)}
+							</p>
+						</section>
 					</div>
 					<Badge variant={getVoterCardStatusVariant(data.voterCard.status)} class="capitalize">
 						{formatVoterCardStatus(data.voterCard.status)}
@@ -61,13 +81,18 @@
 					<p class="text-sm text-(--text-primary)">{data.voterCard.contestGroupName}</p>
 				</section>
 				<section class="space-y-1">
-					<p class="text-xs font-semibold text-(--text-secondary)">ADDRESS</p>
+					<p class="text-xs font-semibold text-(--text-secondary)">POLLING STATION</p>
+					<p class="text-sm text-(--text-primary)">{data.voterCard.pollingStationName}</p>
+				</section>
+
+				<section class="space-y-1">
+					<p class="text-xs font-semibold text-(--text-secondary)">POLLING STATION ADDRESS</p>
 					<p class="text-sm text-(--text-primary)">
 						{getVoterCardFullAddress(
-							data.voterCard.streetAddress,
-							data.voterCard.city,
-							data.voterCard.state,
-							data.voterCard.zipCode
+							data.voterCard.pollingStationStreet,
+							data.voterCard.pollingStationCity,
+							data.voterCard.pollingStationState,
+							data.voterCard.pollingStationZip
 						)}
 					</p>
 				</section>
@@ -109,10 +134,10 @@
 				<p class="text-sm text-(--text-secondary)">
 					Generate and print a PDF version of this voter card for mail distribution.
 				</p>
-				<Button type="button" variant="outline">Generate & Print PDF</Button>
-				<p class="text-xs text-(--text-secondary)">
-					PDF generation is coming soon. This button is a placeholder for future integration.
-				</p>
+
+				<Button type="button" variant="outline" onclick={handleTestGenerateAndPrint}
+					>Generate & Print PDF</Button
+				>
 			</CardContent>
 		</Card>
 	</div>

@@ -3,6 +3,8 @@ import {
 	address,
 	adminContestGroup,
 	contestGroup,
+	contestGroupPollingStation,
+	pollingStation,
 	user,
 	userAddress,
 	voterCard
@@ -14,6 +16,7 @@ import {
 } from '$lib/server/utils/voter-card';
 import { error, fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { Actions, PageServerLoad } from './$types';
 
 function getString(formData: FormData, field: string) {
@@ -23,7 +26,7 @@ function getString(formData: FormData, field: string) {
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const session = await requireAdminSession(locals);
 	const adminId = session.user.id as string;
-
+	const pollingStationAddress = alias(address, 'polling_station_address');
 	const rows = await db
 		.select({
 			id: voterCard.id,
@@ -38,11 +41,22 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			contestGroupId: contestGroup.id,
 			contestGroupName: contestGroup.title,
 			createdAt: voterCard.createdAt,
-			updatedAt: voterCard.updatedAt
+			updatedAt: voterCard.updatedAt,
+			pollingStationName: pollingStation.name,
+			pollingStationStreet: pollingStationAddress.streetAddress,
+			pollingStationCity: pollingStationAddress.city,
+			pollingStationState: pollingStationAddress.state,
+			pollingStationZip: pollingStationAddress.zipCode
 		})
 		.from(voterCard)
 		.innerJoin(user, eq(user.id, voterCard.userId))
 		.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
+		.innerJoin(
+			contestGroupPollingStation,
+			eq(contestGroupPollingStation.contestGroupId, contestGroup.id)
+		)
+		.innerJoin(pollingStation, eq(pollingStation.id, contestGroupPollingStation.pollingStationId))
+		.innerJoin(pollingStationAddress, eq(pollingStation.addressId, pollingStationAddress.id))
 		.leftJoin(userAddress, eq(userAddress.userId, user.id))
 		.leftJoin(address, eq(address.id, userAddress.addressId))
 		.leftJoin(

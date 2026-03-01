@@ -1,6 +1,6 @@
 import type { VoterCardStatus } from '$lib/utils/voter-card';
 
-type VoterCardBaseFields = {
+export type VoterCardBaseFields = {
 	id: string;
 	cardNumber: string;
 	status: VoterCardStatus;
@@ -20,6 +20,11 @@ export type VoterCardListRow = VoterCardBaseFields & {
 export type VoterCardDetailRow = VoterCardBaseFields & {
 	contestGroupId: string;
 	createdAt: Date;
+	pollingStationName: string;
+	pollingStationStreet: string;
+	pollingStationCity: string;
+	pollingStationState: string;
+	pollingStationZip: string;
 	updatedAt: Date;
 };
 
