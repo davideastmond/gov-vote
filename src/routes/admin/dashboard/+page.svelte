@@ -42,10 +42,16 @@
 			accessLevel: ['admin', 'super_admin']
 		},
 		{
-			id: 'create-voters',
-			label: 'Create Voters',
+			id: 'manage-voters',
+			label: 'Manage Voters',
 			description: 'Batch add new voters to the system via JSON upload',
-			urls: [{ label: 'Create Voters', url: '/admin/dashboard/voters/create' }],
+			urls: [
+				{ label: 'Create Voters', url: '/admin/dashboard/voters/create' },
+				{
+					label: 'Manage Voters',
+					url: '/admin/dashboard/voters/manage'
+				}
+			],
 			accessLevel: ['admin', 'super_admin']
 		},
 		{
