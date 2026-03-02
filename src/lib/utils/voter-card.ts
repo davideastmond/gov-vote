@@ -4,6 +4,16 @@ export function getVoterCardFullName(firstName: string, lastName: string): strin
 	return `${firstName} ${lastName}`;
 }
 
+export type AggregatedContestDetails = {
+	id: string;
+	title: string;
+	description: string | null;
+	status: 'upcoming' | 'active' | 'closed';
+	contestItemId: string | null;
+	contestItemTitle: string | null;
+	contestItemAuxiliaryText: string | null;
+	contestItemType: 'candidate' | 'initiative' | 'other' | null;
+};
 export function getVoterCardFullAddress(
 	streetAddress: string | null,
 	city: string | null,

@@ -2,18 +2,22 @@ import { db } from '$lib/server/db';
 import {
 	address,
 	adminContestGroup,
+	contest,
 	contestGroup,
 	contestGroupPollingStation,
+	contestItem,
 	pollingStation,
 	user,
 	userAddress,
-	voterCard
+	voterCard,
+	voterEligibility
 } from '$lib/server/db/schema';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import {
 	normalizeVoterCardDetailRows,
 	type VoterCardDetailRow
 } from '$lib/server/utils/voter-card';
+import type { AggregatedContestDetails } from '$lib/utils/voter-card';
 import { error, fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -51,6 +55,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.from(voterCard)
 		.innerJoin(user, eq(user.id, voterCard.userId))
 		.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
+
 		.innerJoin(
 			contestGroupPollingStation,
 			eq(contestGroupPollingStation.contestGroupId, contestGroup.id)
@@ -66,12 +71,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				eq(adminContestGroup.adminId, adminId)
 			)
 		)
-		.where(
-			and(
-				eq(voterCard.id, params.voterCardId),
-				session.user.role === 'admin' ? eq(adminContestGroup.adminId, adminId) : undefined
-			)
-		);
+		.where(eq(voterCard.id, params.voterCardId));
 
 	const voterCardDetails = normalizeVoterCardDetailRows(rows as VoterCardDetailRow[]);
 
@@ -79,8 +79,33 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, 'Voter card not found');
 	}
 
+	const eligibleContests = await db
+		.select({
+			id: contest.id,
+			title: contest.title,
+			description: contest.description,
+			status: contest.contestStatus,
+			contestItemId: contestItem.id,
+			contestItemTitle: contestItem.title,
+			contestItemAuxiliaryText: contestItem.auxiliaryText,
+			contestItemType: contestItem.contestItemType
+		})
+		.from(voterCard)
+		.innerJoin(
+			voterEligibility,
+			and(
+				eq(voterEligibility.userId, voterCard.userId),
+				eq(voterEligibility.contestGroupId, voterCard.contestGroupId),
+				eq(voterEligibility.isEligible, true)
+			)
+		)
+		.innerJoin(contest, eq(contest.id, voterEligibility.contestId))
+		.leftJoin(contestItem, eq(contestItem.contestId, contest.id))
+		.where(eq(voterCard.id, params.voterCardId));
+
 	return {
-		voterCard: voterCardDetails
+		voterCard: voterCardDetails,
+		eligibleContests: eligibleContests as AggregatedContestDetails[]
 	};
 };
 

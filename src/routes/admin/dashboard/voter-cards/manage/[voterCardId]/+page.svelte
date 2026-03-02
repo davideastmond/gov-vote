@@ -16,7 +16,7 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	async function handleTestGenerateAndPrint() {
-		const voterCardGenerator = new VoterCardGenerator(data.voterCard);
+		const voterCardGenerator = new VoterCardGenerator(data.voterCard, data.eligibleContests);
 		try {
 			await voterCardGenerator.generatePdf();
 		} catch (error) {
