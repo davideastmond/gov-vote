@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 </script>
@@ -9,13 +10,9 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+		<AdminNavToolbar primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }} />
+
 		<header>
-			<a
-				href="/admin/dashboard"
-				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-			>
-				&larr; Back to Admin Dashboard
-			</a>
 			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Manage Admins</h1>
 			<p class="text-[var(--text-secondary)]">Create, edit, or delete admin users.</p>
 		</header>

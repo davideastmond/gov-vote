@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -63,13 +64,15 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-(--bg-primary) px-6 py-8">
 	<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+		<AdminNavToolbar
+			primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }}
+			secondary={{
+				label: 'Back to Voter Details',
+				href: `/admin/dashboard/voters/${data.voter.id}`
+			}}
+		/>
+
 		<header>
-			<a
-				href="/admin/dashboard/voters/{data.voter.id}"
-				class="mb-2 inline-block text-sm text-(--text-secondary) hover:text-(--text-primary)"
-			>
-				← Back to Voter Details
-			</a>
 			<h1 class="text-3xl font-bold text-(--text-primary)">Edit Voter Eligibilities</h1>
 			<p class="mt-1 text-(--text-secondary)">
 				{data.voter.firstName}
@@ -104,6 +107,37 @@
 					<p class="text-xs font-semibold text-(--text-secondary)">EMAIL</p>
 					<p class="truncate text-sm text-(--text-primary)">{data.voter.email}</p>
 				</div>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
+				<CardTitle>Valid Voter Cards</CardTitle>
+			</CardHeader>
+			<CardContent>
+				{#if data.validVoterCards.length === 0}
+					<p class="text-sm text-(--text-secondary)">This voter has no valid voter cards yet.</p>
+				{:else}
+					<div class="space-y-3">
+						{#each data.validVoterCards as voterCardRow (voterCardRow.id)}
+							<div class="rounded-md border border-(--border-primary) p-3">
+								<div class="flex items-center justify-between gap-2">
+									<p class="text-sm font-semibold text-(--text-primary)">
+										{voterCardRow.contestGroupTitle}
+									</p>
+									<Badge variant="outline" class="capitalize">{voterCardRow.cardStatus}</Badge>
+								</div>
+								<p class="mt-2 text-xs font-semibold text-(--text-secondary)">CARD CODE</p>
+								<p class="truncate font-mono text-sm text-(--text-primary)">
+									{voterCardRow.cardCode}
+								</p>
+								<p class="mt-2 text-xs text-(--text-secondary)">
+									Contest Group ID: {voterCardRow.contestGroupId}
+								</p>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			</CardContent>
 		</Card>
 

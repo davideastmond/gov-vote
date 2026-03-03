@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -31,13 +32,12 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-(--bg-primary) px-6 py-8">
 	<div class="mx-auto flex w-full max-w-4xl flex-col gap-6">
+		<AdminNavToolbar
+			primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }}
+			secondary={{ label: 'Back to Voter Cards', href: '/admin/dashboard/voter-cards/manage' }}
+		/>
+
 		<header>
-			<a
-				href="/admin/dashboard/voter-cards/manage"
-				class="mb-2 inline-block text-sm text-(--text-secondary) hover:text-(--text-primary)"
-			>
-				← Back to Voter Cards
-			</a>
 			<h1 class="text-3xl font-bold text-(--text-primary)">Voter Card Details</h1>
 			<p class="mt-1 text-(--text-secondary)">
 				Manage voter card status and print workflow details.

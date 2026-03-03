@@ -47,6 +47,31 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, 'Voter not found');
 	}
 
+	let voterCardsQuery = db
+		.select({
+			id: voterCard.id,
+			contestGroupId: voterCard.contestGroupId,
+			contestGroupTitle: contestGroup.title,
+			cardCode: voterCard.cardCode,
+			cardStatus: voterCard.cardStatus,
+			createdAt: voterCard.createdAt,
+			updatedAt: voterCard.updatedAt
+		})
+		.from(voterCard)
+		.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
+		.where(eq(voterCard.userId, params.userId));
+
+	if (session.user.role === 'admin') {
+		(voterCardsQuery as any) = voterCardsQuery.innerJoin(
+			adminContestGroup,
+			eq(adminContestGroup.contestGroupId, voterCard.contestGroupId)
+		);
+	}
+
+	const validVoterCards = (await voterCardsQuery).filter(
+		(card) => card.cardStatus === 'active' || card.cardStatus === 'generated'
+	);
+
 	let contestGroupsQuery = db
 		.select({
 			contestGroupId: contestGroup.id,
@@ -159,7 +184,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	return {
 		voter,
-		contestGroups: Array.from(contestGroupsMap.values())
+		contestGroups: Array.from(contestGroupsMap.values()),
+		validVoterCards
 	};
 };
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
@@ -35,14 +36,10 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto w-full max-w-6xl">
+		<AdminNavToolbar primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }} />
+
 		<!-- Header -->
 		<header class="mb-8">
-			<a
-				href="/admin/dashboard"
-				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-			>
-				← Back to Dashboard
-			</a>
 			<div class="flex flex-wrap items-center justify-between gap-4">
 				<div>
 					<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Contest Groups</h1>
