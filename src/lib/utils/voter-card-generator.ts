@@ -233,7 +233,7 @@ export class VoterCardGenerator {
 		window.open(URL.createObjectURL(blob));
 	}
 
-	generateContestData(baseInputs: Array<Record<string, string>>): {
+	private generateContestData(baseInputs: Array<Record<string, string>>): {
 		inputs: Array<Record<string, string>>;
 		firstPageSchemas: Array<{
 			[x: string]: unknown;
