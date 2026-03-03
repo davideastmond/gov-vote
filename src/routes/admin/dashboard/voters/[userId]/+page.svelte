@@ -97,5 +97,16 @@
 				</form>
 			</CardContent>
 		</Card>
+
+		<Card>
+			<CardHeader>
+				<CardTitle>Contest Eligibilities</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<Button href={`/admin/dashboard/voters/${data.voter.id}/eligibility`} variant="outline">
+					Edit voter contest eligibilities
+				</Button>
+			</CardContent>
+		</Card>
 	</div>
 </main>
