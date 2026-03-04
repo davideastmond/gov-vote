@@ -119,7 +119,7 @@
 								active
 							</option>
 							<option value="closed" selected={data.contestGroup.contestGroupStatus === 'closed'}>
-								inactive
+								closed
 							</option>
 						</select>
 						<Button type="submit" variant="outline">Save Status</Button>
@@ -134,7 +134,7 @@
 			</CardHeader>
 			<CardContent class="flex flex-col gap-4">
 				<p class="text-sm text-(--text-secondary)">
-					This will mark every contest in this group as inactive (closed).
+					This will mark every contest in this group as closed.
 				</p>
 				<form method="POST" action="?/deactivateGroup">
 					<Button type="submit" variant="outline">Deactivate Contest Group</Button>
