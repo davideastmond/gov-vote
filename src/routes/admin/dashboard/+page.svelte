@@ -44,7 +44,8 @@
 		{
 			id: 'manage-voters',
 			label: 'Manage Voters',
-			description: 'Batch add new voters to the system via JSON upload',
+			description:
+				'Batch add new voters to the system via JSON upload, and manage individual voters and their election eligibility.',
 			urls: [
 				{ label: 'Create Voters', url: '/admin/dashboard/voters/create' },
 				{
