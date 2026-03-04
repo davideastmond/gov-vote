@@ -1,16 +1,29 @@
 <script lang="ts">
 	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
+	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { formatDate } from '$lib/utils/date';
 	import { getVoterCardFullAddress } from '$lib/utils/voter-card';
+	import { batchCreateUserValidator } from '$lib/validators/batch-create-user.validator';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
 	const searchInput = $derived(data.searchQuery);
+
+	let newVoterFirstName = $state('');
+	let newVoterLastName = $state('');
+	let newVoterStreetAddress = $state('');
+	let newVoterCity = $state('');
+	let newVoterState = $state('');
+	let newVoterZipCode = $state('');
+	let isCreateVoterLoading = $state(false);
+	let createVoterError = $state('');
+	let createVoterValidationErrors = $state<string[]>([]);
+	let createVoterSuccessMessage = $state('');
 
 	function handleSearchChange(e: Event) {
 		const form = (e.target as HTMLInputElement).form;
@@ -21,6 +34,82 @@
 
 	function getDisplayName(firstName: string, lastName: string): string {
 		return `${firstName} ${lastName}`;
+	}
+
+	function resetCreateVoterMessages() {
+		createVoterError = '';
+		createVoterValidationErrors = [];
+		createVoterSuccessMessage = '';
+	}
+
+	function resetCreateVoterForm() {
+		newVoterFirstName = '';
+		newVoterLastName = '';
+		newVoterStreetAddress = '';
+		newVoterCity = '';
+		newVoterState = '';
+		newVoterZipCode = '';
+	}
+
+	async function handleCreateVoter(event: Event) {
+		event.preventDefault();
+		resetCreateVoterMessages();
+		isCreateVoterLoading = true;
+
+		try {
+			const voterPayload = [
+				{
+					firstName: newVoterFirstName.trim(),
+					lastName: newVoterLastName.trim(),
+					streetAddress: newVoterStreetAddress.trim(),
+					city: newVoterCity.trim(),
+					state: newVoterState.trim(),
+					zipCode: newVoterZipCode.trim()
+				}
+			];
+
+			const validationResult = batchCreateUserValidator.safeParse(voterPayload);
+			if (!validationResult.success) {
+				createVoterValidationErrors = validationResult.error.issues.map((issue) => {
+					const path = issue.path.join('.');
+					return `${path || 'Root'}: ${issue.message}`;
+				});
+				createVoterError = 'Validation failed. Please check the errors below.';
+				return;
+			}
+
+			const response = await fetch('/api/voters', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(validationResult.data)
+			});
+
+			const result = (await response.json()) as {
+				success?: boolean;
+				message?: string;
+				details?: string[];
+				data?: { insertedUserIds?: string[] };
+			};
+
+			if (!response.ok || !result.success) {
+				createVoterError = result.message ?? 'Failed to create voter.';
+				if (Array.isArray(result.details)) {
+					createVoterValidationErrors = result.details;
+				}
+				return;
+			}
+
+			const insertedCount = result.data?.insertedUserIds?.length ?? 1;
+			createVoterSuccessMessage = `Voter created successfully (${insertedCount} record).`;
+			resetCreateVoterForm();
+		} catch (error) {
+			console.error(error);
+			createVoterError = 'An unexpected error occurred. Please try again.';
+		} finally {
+			isCreateVoterLoading = false;
+		}
 	}
 </script>
 
@@ -38,6 +127,117 @@
 				Search voters by name or user ID and open their details page.
 			</p>
 		</header>
+
+		<section class="mb-8">
+			<Card>
+				<CardHeader>
+					<CardTitle>Add Voter</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<form class="space-y-4" onsubmit={handleCreateVoter}>
+						{#if createVoterError}
+							<Alert variant="destructive">
+								<AlertTitle>Error</AlertTitle>
+								<AlertDescription>{createVoterError}</AlertDescription>
+							</Alert>
+						{/if}
+
+						{#if createVoterValidationErrors.length > 0}
+							<Alert variant="destructive">
+								<AlertTitle>Validation Errors</AlertTitle>
+								<AlertDescription>
+									<ul class="mt-2 list-inside list-disc space-y-1">
+										{#each createVoterValidationErrors as validationError}
+											<li class="text-sm">{validationError}</li>
+										{/each}
+									</ul>
+								</AlertDescription>
+							</Alert>
+						{/if}
+
+						{#if createVoterSuccessMessage}
+							<Alert>
+								<AlertTitle>Success</AlertTitle>
+								<AlertDescription>{createVoterSuccessMessage}</AlertDescription>
+							</Alert>
+						{/if}
+
+						<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+							<div class="space-y-2">
+								<Label for="new-voter-first-name">First Name</Label>
+								<Input
+									id="new-voter-first-name"
+									type="text"
+									bind:value={newVoterFirstName}
+									placeholder="John"
+									required
+								/>
+							</div>
+							<div class="space-y-2">
+								<Label for="new-voter-last-name">Last Name</Label>
+								<Input
+									id="new-voter-last-name"
+									type="text"
+									bind:value={newVoterLastName}
+									placeholder="Doe"
+									required
+								/>
+							</div>
+						</div>
+
+						<div class="space-y-2">
+							<Label for="new-voter-street-address">Street Address</Label>
+							<Input
+								id="new-voter-street-address"
+								type="text"
+								bind:value={newVoterStreetAddress}
+								placeholder="123 Main St"
+								required
+							/>
+						</div>
+
+						<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+							<div class="space-y-2">
+								<Label for="new-voter-city">City</Label>
+								<Input
+									id="new-voter-city"
+									type="text"
+									bind:value={newVoterCity}
+									placeholder="Springfield"
+									required
+								/>
+							</div>
+							<div class="space-y-2">
+								<Label for="new-voter-state">State</Label>
+								<Input
+									id="new-voter-state"
+									type="text"
+									bind:value={newVoterState}
+									placeholder="IL"
+									required
+								/>
+							</div>
+							<div class="space-y-2">
+								<Label for="new-voter-zip-code">Zip Code</Label>
+								<Input
+									id="new-voter-zip-code"
+									type="text"
+									bind:value={newVoterZipCode}
+									placeholder="62701"
+									required
+								/>
+							</div>
+						</div>
+
+						<div>
+							<Button type="submit" disabled={isCreateVoterLoading}>
+								{isCreateVoterLoading ? 'Adding Voter...' : 'Add Voter'}
+							</Button>
+						</div>
+					</form>
+				</CardContent>
+			</Card>
+		</section>
 
 		<section class="mb-8">
 			<Card>
