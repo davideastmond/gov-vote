@@ -12,7 +12,7 @@ describe('/admin/dashboard/+page.svelte', () => {
 						role: 'admin'
 					}
 				}
-			}
+			} as any
 		});
 
 		const heading = page.getByRole('heading', { name: 'Admin Dashboard', level: 1 });
@@ -30,7 +30,7 @@ describe('/admin/dashboard/+page.svelte', () => {
 						role: 'admin'
 					}
 				}
-			}
+			} as any
 		});
 
 		const manageAdminsLink = page.getByRole('link', { name: 'Manage Admins' });
@@ -46,7 +46,7 @@ describe('/admin/dashboard/+page.svelte', () => {
 						role: 'super_admin'
 					}
 				}
-			}
+			} as any
 		});
 
 		const manageAdminsLink = page.getByRole('link', { name: 'Manage Admins' });
@@ -58,7 +58,7 @@ describe('/admin/dashboard/+page.svelte', () => {
 	});
 
 	it('falls back to admin role when session data is missing', async () => {
-		render(Page, { data: undefined });
+		render(Page, { data: undefined } as any);
 
 		const createVotersLink = page.getByRole('link', { name: 'Create Voters' });
 		const manageAdminsLink = page.getByRole('link', { name: 'Manage Admins' });
