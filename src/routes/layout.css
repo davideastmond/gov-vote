@@ -89,6 +89,8 @@
 	--border-primary: var(--border);
 	--border-color: var(--border);
 	--accent-primary: var(--primary);
+
+	--select-background: oklch(0.3 0.03 260);
 }
 
 @theme inline {
@@ -135,5 +137,9 @@
 	}
 	body {
 		@apply bg-background text-foreground;
+	}
+
+	option {
+		@apply bg-(--select-background);
 	}
 }
