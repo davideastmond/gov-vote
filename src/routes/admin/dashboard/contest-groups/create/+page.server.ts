@@ -1,10 +1,7 @@
-import { redirect } from '@sveltejs/kit';
+import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async (event) => {
-	const session = await event.locals.auth();
-	if (!session || !['admin', 'super_admin'].includes(session.user?.role)) {
-		return redirect(302, '/admin/login');
-	}
+	const session = await requireAdminSession(event.locals);
 
 	return {
 		session

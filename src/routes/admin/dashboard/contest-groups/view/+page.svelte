@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
+	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -16,12 +18,15 @@
 		}
 	}
 
-	function formatDate(date: Date | string): string {
-		return new Date(date).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
+	function formatStatus(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+		if (!status) return 'Not specified';
+		return status.charAt(0).toUpperCase() + status.slice(1);
+	}
+
+	function statusVariant(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+		if (status === 'closed') return 'destructive' as const;
+		if (status === 'upcoming') return 'secondary' as const;
+		return 'default' as const;
 	}
 </script>
 
@@ -31,14 +36,10 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto w-full max-w-6xl">
+		<AdminNavToolbar primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }} />
+
 		<!-- Header -->
 		<header class="mb-8">
-			<a
-				href="/admin/dashboard"
-				class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-			>
-				← Back to Dashboard
-			</a>
 			<div class="flex flex-wrap items-center justify-between gap-4">
 				<div>
 					<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Contest Groups</h1>
@@ -99,7 +100,15 @@
 					<a href="/admin/dashboard/contest-groups/view/{group.id}">
 						<Card class="transition-colors hover:bg-[var(--bg-secondary)]">
 							<CardHeader>
-								<CardTitle class="line-clamp-2">{group.title}</CardTitle>
+								<div class="flex items-start justify-between gap-2">
+									<CardTitle class="line-clamp-2">{group.title}</CardTitle>
+									<Badge
+										variant={statusVariant(group.contestGroupStatus)}
+										class="shrink-0 capitalize"
+									>
+										{formatStatus(group.contestGroupStatus)}
+									</Badge>
+								</div>
 							</CardHeader>
 							<CardContent class="flex flex-1 flex-col gap-3">
 								<div>

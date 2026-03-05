@@ -42,10 +42,17 @@
 			accessLevel: ['admin', 'super_admin']
 		},
 		{
-			id: 'create-voters',
-			label: 'Create Voters',
-			description: 'Batch add new voters to the system via JSON upload',
-			urls: [{ label: 'Create Voters', url: '/admin/dashboard/voters/create' }],
+			id: 'manage-voters',
+			label: 'Manage Voters',
+			description:
+				'Batch add new voters to the system via JSON upload, and manage individual voters and their election eligibility.',
+			urls: [
+				{ label: 'Create Voters', url: '/admin/dashboard/voters/create' },
+				{
+					label: 'Manage Voters',
+					url: '/admin/dashboard/voters/manage'
+				}
+			],
 			accessLevel: ['admin', 'super_admin']
 		},
 		{
@@ -55,6 +62,13 @@
 			urls: [
 				{ label: 'Create Voter Eligibility', url: '/admin/dashboard/voter-eligibility/create' }
 			],
+			accessLevel: ['admin', 'super_admin']
+		},
+		{
+			id: 'voter-cards',
+			label: 'Voter Cards',
+			description: 'View and manage voter cards',
+			urls: [{ label: 'Manage Voter Cards', url: '/admin/dashboard/voter-cards/manage' }],
 			accessLevel: ['admin', 'super_admin']
 		}
 	];

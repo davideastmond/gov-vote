@@ -1,0 +1,2 @@
+CREATE TYPE "public"."contest_group_status" AS ENUM('upcoming', 'active', 'closed');--> statement-breakpoint
+ALTER TABLE "contest_group" ADD COLUMN "contestGroupStatus" "contest_group_status" DEFAULT 'upcoming' NOT NULL;

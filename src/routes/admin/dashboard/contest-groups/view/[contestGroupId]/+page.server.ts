@@ -8,6 +8,7 @@ import {
 	contestItem,
 	pollingStation
 } from '$lib/server/db/schema';
+import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
@@ -16,20 +17,21 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { contestGroupId } = params;
 
-	const session = await locals.auth();
+	const session = await requireAdminSession(locals);
 
 	// Contest group details - title and description and polling locations
 	// If user is super_admin, they can view any contest group.
 	// If user is admin, they can only view contest groups they are associated with.
 	const contestGroupData = await retrieveContestGroup(
-		session?.user.role as 'admin' | 'super_admin',
-		session?.user.id
+		session.user.role as 'admin' | 'super_admin',
+		session.user.id as string
 	);
 
 	const ballotContests = await db
 		.select({
 			contestTitle: contest.title,
 			contestDescription: contest.description,
+			contestStatus: contest.contestStatus,
 			contestItemId: contestItem.id,
 			contestItemTitle: contestItem.title,
 			contestItemAuxiliaryText: contestItem.auxiliaryText,
@@ -46,12 +48,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		contestGroupId: contestGroupId
 	};
 
-	async function retrieveContestGroup(accessLevel?: 'admin' | 'super_admin', userId?: string) {
+	async function retrieveContestGroup(accessLevel: 'admin' | 'super_admin', userId: string) {
 		if (accessLevel === 'super_admin') {
 			return db
 				.select({
 					contestGroupId: contestGroup.id,
 					contestGroupTitle: contestGroup.title,
+					contestGroupStatus: contestGroup.contestGroupStatus,
 					contestGroupDescription: contestGroup.description,
 					pollingStationId: pollingStation.id,
 					pollingStationName: pollingStation.name,
@@ -76,6 +79,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			.select({
 				contestGroupId: contestGroup.id,
 				contestGroupTitle: contestGroup.title,
+				contestGroupStatus: contestGroup.contestGroupStatus,
 				contestGroupDescription: contestGroup.description,
 				pollingStationId: pollingStation.id,
 				pollingStationName: pollingStation.name,
@@ -86,7 +90,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			})
 			.from(contestGroup)
 			.where(eq(contestGroup.id, contestGroupId))
-			.leftJoin(adminContestGroup, eq(adminContestGroup.adminId, userId as string))
+			.leftJoin(adminContestGroup, eq(adminContestGroup.adminId, userId))
 			.leftJoin(
 				contestGroupPollingStation,
 				eq(contestGroupPollingStation.contestGroupId, contestGroup.id)

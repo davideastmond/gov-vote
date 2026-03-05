@@ -1,30 +1,30 @@
 import { z } from 'zod';
 import { addressValidator } from './address.validator';
 
-const contestGroupBasicValidator = z.object({
+export const contestGroupBasicValidator = z.object({
 	id: z.uuid(),
 	title: z.string().min(1, 'Title is required'),
 	description: z.string().optional()
 });
 
 const adminIdsValidator = z.array(z.string().min(1, 'Admin ID cannot be empty')).optional();
-const contestItemsValidator = z.object({
+
+export const contestItemsValidator = z.object({
 	id: z.uuid(),
 	title: z.string().min(1, 'Contest item title is required'),
 	auxiliaryText: z.string().optional(),
 	contestItemType: z.enum(['candidate', 'initiative', 'other'])
 });
 
-const contestsValidator = z
-	.array(
-		z.object({
-			id: z.uuid(),
-			title: z.string().min(1, 'Contest title is required'),
-			description: z.string().optional(),
-			contestStatus: z.enum(['upcoming', 'active', 'closed']),
-			items: z.array(contestItemsValidator).min(1, 'At least one contest item is required')
-		})
-	)
+export const baseContestsValidator = z.object({
+	id: z.uuid(),
+	title: z.string().min(1, 'Contest title is required'),
+	description: z.string().optional(),
+	contestStatus: z.enum(['upcoming', 'active', 'closed']),
+	items: z.array(contestItemsValidator).min(1, 'At least one contest item is required')
+});
+export const contestsValidator = z
+	.array(baseContestsValidator)
 	.min(1, 'At least one contest is required')
 	.refine(
 		(contests) =>

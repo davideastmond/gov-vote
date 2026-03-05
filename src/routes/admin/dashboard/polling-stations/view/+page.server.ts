@@ -1,16 +1,14 @@
 import { db } from '$lib/server/db';
 import { address, pollingStation } from '$lib/server/db/schema';
-import { fail, redirect } from '@sveltejs/kit';
+import { requireAdminSession } from '$lib/server/utils/require-admin-session';
+import { fail } from '@sveltejs/kit';
 import { eq, ilike, or } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 const PAGE_SIZE = 12;
 
 export const load: PageServerLoad = async (event) => {
-	const session = await event.locals.auth();
-	if (!session || !['admin', 'super_admin'].includes(session.user?.role)) {
-		return redirect(302, '/admin/login');
-	}
+	await requireAdminSession(event.locals);
 
 	const searchQuery = event.url.searchParams.get('q') ?? '';
 	const pageParam = event.url.searchParams.get('page') ?? '1';
@@ -65,10 +63,7 @@ function getString(formData: FormData, field: string) {
 
 export const actions: Actions = {
 	updatePollingStation: async ({ request, locals }) => {
-		const session = await locals.auth();
-		if (!session || !['admin', 'super_admin'].includes(session.user?.role)) {
-			return redirect(302, '/admin/login');
-		}
+		await requireAdminSession(locals);
 
 		const formData = await request.formData();
 		const pollingStationId = getString(formData, 'pollingStationId');
