@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
+import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { redirect } from '@sveltejs/kit';
 import { and, eq, ilike, or } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
@@ -7,8 +8,8 @@ import type { PageServerLoad } from './$types';
 const ITEMS_PER_PAGE = 10;
 
 export const load: PageServerLoad = async (event) => {
-	const session = await event.locals.auth();
-	if (!session || !['super_admin'].includes(session.user?.role)) {
+	const session = await requireAdminSession(event.locals);
+	if (session.user.role !== 'super_admin') {
 		return redirect(302, '/admin/login');
 	}
 

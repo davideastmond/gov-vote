@@ -7,15 +7,13 @@ import {
 	contestItem,
 	pollingStation
 } from '$lib/server/db/schema';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { requireAdminSession } from '$lib/server/utils/require-admin-session';
+import { error, fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 async function assertAdmin(locals: App.Locals) {
-	const session = await locals.auth();
-	if (!session || !['admin', 'super_admin'].includes(session.user?.role)) {
-		throw redirect(302, '/admin/login');
-	}
+	await requireAdminSession(locals);
 }
 
 function getString(formData: FormData, field: string) {
@@ -113,6 +111,35 @@ export const actions: Actions = {
 			action: 'updateGroupDetails',
 			success: true,
 			message: 'Contest group details updated.'
+		};
+	},
+
+	updateGroupStatus: async ({ request, params, locals }) => {
+		await assertAdmin(locals);
+
+		const formData = await request.formData();
+		const contestGroupStatus = getString(formData, 'contestGroupStatus');
+
+		if (!['upcoming', 'active', 'closed'].includes(contestGroupStatus)) {
+			return fail(400, {
+				action: 'updateGroupStatus',
+				success: false,
+				message: 'Invalid contest group status.'
+			});
+		}
+
+		await db
+			.update(contestGroup)
+			.set({
+				contestGroupStatus: contestGroupStatus as 'upcoming' | 'active' | 'closed',
+				updatedAt: new Date()
+			})
+			.where(eq(contestGroup.id, params.contestGroupId));
+
+		return {
+			action: 'updateGroupStatus',
+			success: true,
+			message: 'Contest group status updated.'
 		};
 	},
 

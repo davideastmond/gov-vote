@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -42,13 +43,15 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-(--bg-primary) px-6 py-8">
 	<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+		<AdminNavToolbar
+			primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }}
+			secondary={{
+				label: 'Back to Contest Group',
+				href: `/admin/dashboard/contest-groups/view/${data.contestGroup.id}`
+			}}
+		/>
+
 		<header>
-			<a
-				href="/admin/dashboard/contest-groups/view/{data.contestGroup.id}"
-				class="mb-2 inline-block text-sm text-(--text-secondary) hover:text-(--text-primary)"
-			>
-				← Back to Contest Group
-			</a>
 			<h1 class="text-3xl font-bold text-(--text-primary)">Edit Contest Group</h1>
 			<p class="mt-1 text-(--text-secondary)">
 				Manage details, contests, and contest items for {data.contestGroup.title}.
@@ -89,11 +92,49 @@
 
 		<Card>
 			<CardHeader>
+				<CardTitle>Contest Group Status</CardTitle>
+			</CardHeader>
+			<CardContent class="space-y-4">
+				<div class="flex items-center justify-between gap-4 rounded-md border p-3">
+					<p class="text-sm text-(--text-secondary)">Current status</p>
+					<Badge variant={statusVariant(data.contestGroup.contestGroupStatus)} class="capitalize"
+						>{statusLabel(data.contestGroup.contestGroupStatus)}</Badge
+					>
+				</div>
+				<form method="POST" action="?/updateGroupStatus" class="space-y-2">
+					<Label for="contest-group-status">Status</Label>
+					<div class="flex flex-wrap items-center gap-2">
+						<select
+							id="contest-group-status"
+							name="contestGroupStatus"
+							class="flex h-9 w-35 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+						>
+							<option
+								value="upcoming"
+								selected={data.contestGroup.contestGroupStatus === 'upcoming'}
+							>
+								upcoming
+							</option>
+							<option value="active" selected={data.contestGroup.contestGroupStatus === 'active'}>
+								active
+							</option>
+							<option value="closed" selected={data.contestGroup.contestGroupStatus === 'closed'}>
+								closed
+							</option>
+						</select>
+						<Button type="submit" variant="outline">Save Status</Button>
+					</div>
+				</form>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
 				<CardTitle>Deactivate Contest Group</CardTitle>
 			</CardHeader>
 			<CardContent class="flex flex-col gap-4">
 				<p class="text-sm text-(--text-secondary)">
-					This will mark every contest in this group as inactive (closed).
+					This will mark every contest in this group as closed.
 				</p>
 				<form method="POST" action="?/deactivateGroup">
 					<Button type="submit" variant="outline">Deactivate Contest Group</Button>

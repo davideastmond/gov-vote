@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
@@ -176,13 +177,15 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-(--bg-primary) px-6 py-8">
 	<div class="mx-auto flex w-full max-w-4xl flex-col gap-8">
+		<AdminNavToolbar
+			primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }}
+			secondary={{
+				label: 'View Polling Stations',
+				href: '/admin/dashboard/polling-stations/view'
+			}}
+		/>
+
 		<header>
-			<a
-				href="/admin/dashboard"
-				class="mb-2 inline-block text-sm text-(--text-secondary) hover:text-(--text-primary)"
-			>
-				&larr; Back to Dashboard
-			</a>
 			<h1 class="mb-2 text-3xl font-bold text-(--text-primary)">Create Polling Stations</h1>
 			<p class="text-(--text-secondary)">
 				Create a single polling station or batch create multiple stations using JSON.

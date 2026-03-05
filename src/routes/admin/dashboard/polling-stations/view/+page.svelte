@@ -1,9 +1,11 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { formatDate } from '$lib/utils/date';
 	import type { ActionData, PageData } from './$types';
 
 	type PollingStationRow = PageData['pollingStations'][number];
@@ -30,14 +32,6 @@
 		if (form) {
 			form.submit();
 		}
-	}
-
-	function formatDate(date: Date | string): string {
-		return new Date(date).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 
 	function getFullAddress(
@@ -106,13 +100,9 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-(--bg-primary) px-6 py-8">
 	<div class="mx-auto w-full max-w-6xl">
+		<AdminNavToolbar primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }} />
+
 		<header class="mb-8">
-			<a
-				href="/admin/dashboard"
-				class="mb-2 inline-block text-sm text-(--text-secondary) hover:text-(--text-primary)"
-			>
-				← Back to Dashboard
-			</a>
 			<div class="flex flex-wrap items-center justify-between gap-4">
 				<div>
 					<h1 class="mb-2 text-3xl font-bold text-(--text-primary)">Polling Stations</h1>

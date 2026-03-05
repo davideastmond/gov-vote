@@ -1,16 +1,13 @@
 import { db } from '$lib/server/db';
 import { contestGroup } from '$lib/server/db/schema';
-import { redirect } from '@sveltejs/kit';
+import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { like, or } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 const PAGE_SIZE = 12;
 
 export const load: PageServerLoad = async (event) => {
-	const session = await event.locals.auth();
-	if (!session || !['admin', 'super_admin'].includes(session.user?.role)) {
-		return redirect(302, '/admin/login');
-	}
+	await requireAdminSession(event.locals);
 
 	const searchQuery = event.url.searchParams.get('q') || '';
 	const page = Math.max(1, parseInt(event.url.searchParams.get('page') || '1'));
@@ -19,7 +16,8 @@ export const load: PageServerLoad = async (event) => {
 		.select({
 			id: contestGroup.id,
 			title: contestGroup.title,
-			description: contestGroup.description
+			description: contestGroup.description,
+			contestGroupStatus: contestGroup.contestGroupStatus
 		})
 		.from(contestGroup);
 

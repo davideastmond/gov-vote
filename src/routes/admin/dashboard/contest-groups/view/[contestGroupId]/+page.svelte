@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AdminNavToolbar from '$lib/components/AdminNavToolbar.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
@@ -44,6 +45,7 @@
 				contest = {
 					title: row.contestTitle,
 					description: row.contestDescription,
+					status: row.contestStatus,
 					items: []
 				};
 				acc.push(contest);
@@ -59,6 +61,7 @@
 		[] as Array<{
 			title: string;
 			description: string | null;
+			status: 'upcoming' | 'active' | 'closed' | null;
 			items: Array<{
 				id: string;
 				title: string;
@@ -72,6 +75,17 @@
 		if (!value || value.trim().length === 0) return 'not specified';
 		return value;
 	}
+
+	function formatStatus(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+		if (!status) return 'Not specified';
+		return status.charAt(0).toUpperCase() + status.slice(1);
+	}
+
+	function statusVariant(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+		if (status === 'closed') return 'destructive' as const;
+		if (status === 'upcoming') return 'secondary' as const;
+		return 'default' as const;
+	}
 </script>
 
 <svelte:head>
@@ -80,15 +94,14 @@
 
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+		<AdminNavToolbar
+			primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }}
+			secondary={{ label: 'Back to Contest Groups', href: '/admin/dashboard/contest-groups/view' }}
+		/>
+
 		<!-- Header -->
 		<div class="flex flex-wrap items-center justify-between gap-4">
 			<div>
-				<a
-					href="/admin/dashboard"
-					class="mb-2 inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-				>
-					← Back to Dashboard
-				</a>
 				<h1 class="text-3xl font-bold text-[var(--text-primary)]">
 					{contestGroupData[0]?.contestGroupTitle || 'Contest Group'}
 				</h1>
@@ -107,6 +120,18 @@
 				>
 			{/if}
 		</div>
+
+		<!-- Status -->
+		<Card>
+			<CardHeader>
+				<CardTitle>Status</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<Badge variant={statusVariant(contestGroupData[0]?.contestGroupStatus)} class="capitalize">
+					{formatStatus(contestGroupData[0]?.contestGroupStatus)}
+				</Badge>
+			</CardContent>
+		</Card>
 
 		<!-- Polling Stations -->
 		<Card>
@@ -188,9 +213,12 @@
 								{#if idx > 0}
 									<Separator class="mb-6" />
 								{/if}
-								<h3 class="mb-1 text-lg font-semibold text-[var(--text-primary)]">
-									{contest.title}
-								</h3>
+								<div class="mb-1 flex items-center justify-between gap-3">
+									<h3 class="text-lg font-semibold text-[var(--text-primary)]">{contest.title}</h3>
+									<Badge variant={statusVariant(contest.status)} class="capitalize">
+										{formatStatus(contest.status)}
+									</Badge>
+								</div>
 								{#if contest.description}
 									<p class="mb-3 text-sm text-[var(--text-secondary)]">{contest.description}</p>
 								{/if}
