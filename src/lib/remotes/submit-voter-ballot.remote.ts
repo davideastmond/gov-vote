@@ -49,10 +49,7 @@ export const submitVoterBallot = command(
 
 		const voterCardEl = await db.query.voterCard.findFirst({
 			where: (voterCard, { eq, and, or }) =>
-				and(
-					eq(voterCard.cardCode, voterCardCode),
-					or(eq(voterCard.cardStatus, 'active'), eq(voterCard.cardStatus, 'generated'))
-				)
+				and(eq(voterCard.cardCode, voterCardCode), eq(voterCard.cardStatus, 'active'))
 		});
 		if (!voterCardEl) {
 			return {
