@@ -31,7 +31,7 @@
 		{
 			id: 'contest-groups',
 			label: 'Contest Groups',
-			description: 'Search, view, create election contest groups',
+			description: 'Search, view, create election contest groups. Tabulate election results.',
 			urls: [
 				{ label: 'View Contest Groups', url: '/admin/dashboard/contest-groups/view' },
 				{
