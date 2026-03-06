@@ -25,6 +25,8 @@ export const submitVoterBallot = command(
 				return { success: false, errors };
 			}
 		}
+
+		// The voterCardCode is stored in the JWT, so we need to get the JWT from the cookies and verify it to get the voterCardCode and userId for this ballot submission
 		const { cookies } = getRequestEvent();
 		const voterToken = cookies.get('voter_token');
 		if (!voterToken) {
@@ -44,7 +46,7 @@ export const submitVoterBallot = command(
 				errors: { voterToken: 'Unauthorized request: invalid token credentials' }
 			};
 		}
-		// I need to access the voterToken from the cookies to identify which voter is submitting the ballot.
+
 		const voterCardEl = await db.query.voterCard.findFirst({
 			where: (voterCard, { eq, and, or }) =>
 				and(
@@ -95,9 +97,16 @@ export const submitVoterBallot = command(
 			);
 			if (!matchingEligibilityRecord) {
 				// This shouldn't happen.
-				throw new Error(
-					`No matching eligibility record found for contestId ${contestId} and user ${voterCardEl.userId}. Skipping this contest.`
+				console.error(
+					`No matching eligibility record found for contestId ${contestId} and voterCardCode ${voterCardCode}. This may indicate a potential security issue or a bug in the frontend code.`
 				);
+				return {
+					success: false,
+					errors: {
+						contestId: `We cannot process the submission for this ballot`
+					}
+				};
+				// In a production system, we might want to log this incident for further investigation, as it could indicate a potential security issue or a bug in the frontend code that's generating the ballot data.
 			}
 			for await (const selectedItemId of selectedContestItemIds) {
 				// Write a voterChoice
