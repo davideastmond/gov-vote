@@ -86,6 +86,10 @@
 		if (status === 'upcoming') return 'secondary' as const;
 		return 'default' as const;
 	}
+
+	function isContestGroupClosed() {
+		return contestGroupData[0]?.contestGroupStatus === 'closed';
+	}
 </script>
 
 <svelte:head>
@@ -116,8 +120,8 @@
 					variant="outline"
 					href={`/admin/dashboard/contest-groups/edit/${contestGroupData[0]?.contestGroupId}`}
 				>
-					Edit Contest Group</Button
-				>
+					{isContestGroupClosed() ? 'View' : 'Edit'} Details
+				</Button>
 			{/if}
 		</div>
 
@@ -132,6 +136,20 @@
 				</Badge>
 			</CardContent>
 		</Card>
+
+		{#if isContestGroupClosed()}
+			<Card>
+				<CardHeader>
+					<CardTitle>Contest Group tabulation</CardTitle>
+				</CardHeader>
+				<CardContent class="flex flex-wrap items-center justify-between gap-3">
+					<p class="text-sm text-[var(--text-secondary)]">
+						The contest group is closed and ready for election result calculation.
+					</p>
+					<Button type="button">Calculate Results</Button>
+				</CardContent>
+			</Card>
+		{/if}
 
 		<!-- Polling Stations -->
 		<Card>
