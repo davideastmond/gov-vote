@@ -83,8 +83,7 @@
 <main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
 	<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
 		<AdminNavToolbar
-			primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }}
-			secondary={{
+			primary={{
 				label: 'Back to Contest Group',
 				href: `/admin/dashboard/contest-groups/view/${data.contestGroup.id}`
 			}}

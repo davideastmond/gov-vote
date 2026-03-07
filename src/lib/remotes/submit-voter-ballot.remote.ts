@@ -132,6 +132,10 @@ export const submitVoterBallot = command(
 			.update(voterCard)
 			.set({ cardStatus: 'inactive' })
 			.where(eq(voterCard.id, voterCardEl.id));
+
+		// End this voting session immediately after a successful ballot submission.
+		cookies.delete('voter_token', { path: '/' });
+
 		return { success: true };
 	}
 );

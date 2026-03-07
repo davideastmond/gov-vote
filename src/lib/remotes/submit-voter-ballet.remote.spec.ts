@@ -39,7 +39,8 @@ describe('submitVoterBallot', () => {
 
 		mockGetRequestEvent.mockReturnValue({
 			cookies: {
-				get: vi.fn().mockReturnValue('valid-token')
+				get: vi.fn().mockReturnValue('valid-token'),
+				delete: vi.fn()
 			}
 		});
 
@@ -87,7 +88,8 @@ describe('submitVoterBallot', () => {
 	it('rejects when voter token is missing', async () => {
 		mockGetRequestEvent.mockReturnValue({
 			cookies: {
-				get: vi.fn().mockReturnValue(undefined)
+				get: vi.fn().mockReturnValue(undefined),
+				delete: vi.fn()
 			}
 		});
 
@@ -126,6 +128,14 @@ describe('submitVoterBallot', () => {
 	});
 
 	it('writes voter choices and marks eligibility/card status on successful submission', async () => {
+		const cookiesDelete = vi.fn();
+		mockGetRequestEvent.mockReturnValue({
+			cookies: {
+				get: vi.fn().mockReturnValue('valid-token'),
+				delete: cookiesDelete
+			}
+		});
+
 		const innerJoin = vi.fn().mockResolvedValue([
 			{
 				voter_eligibility: {
@@ -152,5 +162,6 @@ describe('submitVoterBallot', () => {
 		expect(result).toEqual({ success: true });
 		expect(mockDb.insert).toHaveBeenCalledTimes(3);
 		expect(mockDb.update).toHaveBeenCalledTimes(2);
+		expect(cookiesDelete).toHaveBeenCalledWith('voter_token', { path: '/' });
 	});
 });
