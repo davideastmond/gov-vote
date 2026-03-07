@@ -146,7 +146,12 @@
 					<p class="text-sm text-[var(--text-secondary)]">
 						The contest group is closed and ready for election result calculation.
 					</p>
-					<Button type="button">Calculate Results</Button>
+					<a
+						href="/admin/dashboard/contest-groups/results/{contestGroupData[0]?.contestGroupId}"
+						class="w-full sm:w-auto"
+					>
+						<Button type="button">Calculate Results</Button>
+					</a>
 				</CardContent>
 			</Card>
 		{/if}
