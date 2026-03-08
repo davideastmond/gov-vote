@@ -5,11 +5,25 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
+	import { onMount } from 'svelte';
 	import z from 'zod';
 
 	let voterCardCode = '';
 	let isLoading = false;
 	let error: null | string = null;
+
+	onMount(() => {
+		const queryCode = new URL(window.location.href).searchParams.get('c');
+
+		if (!queryCode) {
+			return;
+		}
+
+		const isValidUuid = z.uuid().safeParse(queryCode).success;
+		if (isValidUuid) {
+			voterCardCode = formatUUID(queryCode);
+		}
+	});
 
 	function formatUUID(value: string): string {
 		// Remove all non-hexadecimal characters and hyphens

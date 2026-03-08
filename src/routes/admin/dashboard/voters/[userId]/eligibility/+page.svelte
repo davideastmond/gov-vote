@@ -12,6 +12,8 @@
 
 	let modal = $state<HTMLDialogElement | null>(null);
 	let searchTerm = $state('');
+	type ContestGroupStatus = PageData['contestGroups'][number]['status'];
+	let contestGroupStatusFilter = $state<'all' | ContestGroupStatus>('all');
 	let selectedGroup = $state<PageData['contestGroups'][number] | null>(null);
 	let selectedContestIds = $state<string[]>([]);
 
@@ -21,13 +23,19 @@
 
 	const filteredContestGroups = $derived.by(() => {
 		const normalized = searchTerm.trim().toLowerCase();
-		if (!normalized) return data.contestGroups;
+		const statusFilter = contestGroupStatusFilter;
 
-		return data.contestGroups.filter(
-			(group) =>
+		if (!normalized && statusFilter === 'all') return data.contestGroups;
+
+		return data.contestGroups.filter((group) => {
+			const matchesSearch =
+				!normalized ||
 				group.title.toLowerCase().includes(normalized) ||
-				group.id.toLowerCase().includes(normalized)
-		);
+				group.id.toLowerCase().includes(normalized);
+			const matchesStatus = statusFilter === 'all' || group.status === statusFilter;
+
+			return matchesSearch && matchesStatus;
+		});
 	});
 
 	function openGroupModal(group: PageData['contestGroups'][number]) {
@@ -56,6 +64,8 @@
 			closeModal();
 		}
 	});
+
+	const selectedGroupIsClosed = $derived(selectedGroup?.status === 'closed');
 </script>
 
 <svelte:head>
@@ -116,7 +126,7 @@
 			</CardHeader>
 			<CardContent>
 				{#if data.validVoterCards.length === 0}
-					<p class="text-sm text-(--text-secondary)">This voter has no valid voter cards yet.</p>
+					<p class="text-sm text-(--text-secondary)">No current valid voter cards.</p>
 				{:else}
 					<div class="space-y-3">
 						{#each data.validVoterCards as voterCardRow (voterCardRow.id)}
@@ -170,14 +180,31 @@
 			<CardHeader>
 				<CardTitle>Search Contest Groups</CardTitle>
 			</CardHeader>
-			<CardContent class="space-y-2">
-				<Label for="contest-group-search">Contest Group Name or ID</Label>
-				<Input
-					id="contest-group-search"
-					type="text"
-					bind:value={searchTerm}
-					placeholder="Type to filter contest groups by name or ID..."
-				/>
+			<CardContent class="space-y-4">
+				<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+					<div class="space-y-2">
+						<Label for="contest-group-search">Contest Group Name or ID</Label>
+						<Input
+							id="contest-group-search"
+							type="text"
+							bind:value={searchTerm}
+							placeholder="Type to filter contest groups by name or ID..."
+						/>
+					</div>
+					<div class="space-y-2">
+						<Label for="contest-group-status-filter">Contest Group Status</Label>
+						<select
+							id="contest-group-status-filter"
+							bind:value={contestGroupStatusFilter}
+							class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+						>
+							<option value="all">All statuses</option>
+							<option value="upcoming">Upcoming</option>
+							<option value="active">Active</option>
+							<option value="closed">Closed</option>
+						</select>
+					</div>
+				</div>
 				<p class="text-sm text-(--text-secondary)">
 					Showing {filteredContestGroups.length} of {data.contestGroups.length} contest groups
 				</p>
@@ -259,7 +286,7 @@
 						{#each selectedGroup.contests as groupContest (groupContest.id)}
 							<label
 								for={groupContest.id}
-								class="flex cursor-pointer items-start gap-2 rounded-sm p-1 hover:bg-(--bg-secondary)"
+								class={`flex items-start gap-2 rounded-sm p-1 ${selectedGroupIsClosed ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-(--bg-secondary)'}`}
 							>
 								<input
 									id={groupContest.id}
@@ -267,6 +294,7 @@
 									name="contestIds"
 									value={groupContest.id}
 									bind:group={selectedContestIds}
+									disabled={selectedGroupIsClosed}
 								/>
 								<span class="flex-1">
 									<span class="block text-sm text-(--text-primary)">{groupContest.title}</span>
@@ -278,6 +306,15 @@
 						{/each}
 					</div>
 				</div>
+
+				{#if selectedGroupIsClosed}
+					<Alert variant="destructive">
+						<AlertTitle>Contest group is closed</AlertTitle>
+						<AlertDescription>
+							Eligibility updates are disabled because this contest group is inactive.
+						</AlertDescription>
+					</Alert>
+				{/if}
 
 				{#if !selectedGroup.pollingStationId}
 					<Alert variant="destructive">
@@ -295,7 +332,7 @@
 						name="actionType"
 						value="update"
 						variant="outline"
-						disabled={!selectedGroup.pollingStationId}
+						disabled={!selectedGroup.pollingStationId || selectedGroupIsClosed}
 					>
 						Update eligibilities
 					</Button>
@@ -303,7 +340,7 @@
 						type="submit"
 						name="actionType"
 						value="updateAndGenerateCard"
-						disabled={!selectedGroup.pollingStationId}
+						disabled={!selectedGroup.pollingStationId || selectedGroupIsClosed}
 					>
 						Update eligibilities and generate voterCard
 					</Button>
