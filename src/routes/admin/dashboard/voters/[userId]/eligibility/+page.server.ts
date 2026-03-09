@@ -10,7 +10,7 @@ import {
 } from '$lib/server/db/schema';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { error, fail } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 type ContestGroupContestRow = {
@@ -264,6 +264,22 @@ export const actions: Actions = {
 		}
 
 		const selectedContestIdSet = new Set(selectedContestIds);
+
+		// Reset all prior eligibilities for this voter in the selected contest group,
+		// including contests that may no longer be part of the group.
+		await db
+			.update(voterEligibility)
+			.set({
+				isEligible: false,
+				isComplete: false,
+				updatedAt: new Date()
+			})
+			.where(
+				and(
+					eq(voterEligibility.userId, params.userId),
+					eq(voterEligibility.contestGroupId, contestGroupId)
+				)
+			);
 
 		for (const groupContest of groupContests) {
 			const isEligible = selectedContestIdSet.has(groupContest.id);

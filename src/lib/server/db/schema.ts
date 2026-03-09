@@ -173,3 +173,16 @@ export const voterCard = pgTable('voter_card', {
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
+
+export const voterIdPhoto = pgTable('voter_id_photo', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	contestGroupId: text('contest_group_id')
+		.notNull()
+		.references(() => contestGroup.id, { onDelete: 'cascade' }),
+	photoUrl: text('photo_url').notNull(), // This is the URL of the ID photo stored in cloud storage
+	createdAt: timestamp('created_at').notNull().defaultNow(),
+	updatedAt: timestamp('updated_at').notNull().defaultNow()
+});

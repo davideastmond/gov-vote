@@ -9,7 +9,7 @@ import {
 } from '$lib/server/db/schema';
 import { verifyJWT } from '$lib/server/utils/jwt/jwt';
 import { redirect } from '@sveltejs/kit';
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 import { normalizeBallotRows } from './ballot-transform';
 
@@ -33,21 +33,25 @@ export const load: PageServerLoad = async (event) => {
 		.select()
 		.from(voterCard)
 		.where(and(eq(voterCard.cardCode, sub), eq(voterCard.cardStatus, 'active')))
-		.innerJoin(contestGroup, eq(contestGroup.id, voterCard.contestGroupId))
+		.innerJoin(
+			contestGroup,
+			and(
+				eq(contestGroup.id, voterCard.contestGroupId),
+				eq(contestGroup.contestGroupStatus, 'active')
+			)
+		)
 		.innerJoin(
 			voterEligibility,
 			and(
 				eq(voterEligibility.contestGroupId, contestGroup.id),
-				eq(voterEligibility.isEligible, true)
+				eq(voterEligibility.isEligible, true),
+				eq(voterEligibility.isComplete, false)
 			)
 		)
 		.innerJoin(user, eq(user.id, voterEligibility.userId))
 		.innerJoin(
 			contest,
-			and(
-				eq(contest.id, voterEligibility.contestId),
-				or(eq(contest.contestStatus, 'upcoming'), eq(contest.contestStatus, 'active'))
-			)
+			and(eq(contest.id, voterEligibility.contestId), eq(contest.contestStatus, 'active'))
 		)
 		.innerJoin(contestItem, eq(contestItem.contestId, contest.id));
 

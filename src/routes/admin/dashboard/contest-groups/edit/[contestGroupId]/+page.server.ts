@@ -154,6 +154,14 @@ export const actions: Actions = {
 			})
 			.where(eq(contest.contestGroupId, params.contestGroupId));
 
+		await db
+			.update(contestGroup)
+			.set({
+				contestGroupStatus: 'closed',
+				updatedAt: new Date()
+			})
+			.where(eq(contestGroup.id, params.contestGroupId));
+
 		return {
 			action: 'deactivateGroup',
 			success: true,

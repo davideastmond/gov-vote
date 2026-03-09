@@ -5,11 +5,26 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
+	import { onMount } from 'svelte';
 	import z from 'zod';
 
 	let voterCardCode = '';
+	let idPhotoFile: File | null = null;
 	let isLoading = false;
 	let error: null | string = null;
+
+	onMount(() => {
+		const queryCode = new URL(window.location.href).searchParams.get('c');
+
+		if (!queryCode) {
+			return;
+		}
+
+		const isValidUuid = z.uuid().safeParse(queryCode).success;
+		if (isValidUuid) {
+			voterCardCode = formatUUID(queryCode);
+		}
+	});
 
 	function formatUUID(value: string): string {
 		// Remove all non-hexadecimal characters and hyphens
@@ -41,6 +56,34 @@
 		}
 	}
 
+	function handleIdPhotoInput(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const selectedFile = target.files?.[0] ?? null;
+
+		if (!selectedFile) {
+			idPhotoFile = null;
+			if (error === 'Please upload a photo of your ID before continuing.') {
+				error = null;
+			}
+			return;
+		}
+
+		if (!selectedFile.type.startsWith('image/')) {
+			error = 'Please upload an image file for your ID photo.';
+			target.value = '';
+			idPhotoFile = null;
+			return;
+		}
+
+		idPhotoFile = selectedFile;
+		if (
+			error === 'Please upload a photo of your ID before continuing.' ||
+			error === 'Please upload an image file for your ID photo.'
+		) {
+			error = null;
+		}
+	}
+
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 		error = null;
@@ -51,10 +94,15 @@
 			return;
 		}
 
+		if (!idPhotoFile) {
+			error = 'Please upload a photo of your ID before continuing.';
+			return;
+		}
+
 		isLoading = true;
 
 		try {
-			const { ok } = await fetch('/api/token', {
+			const tokenResponse = await fetch('/api/token', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -62,11 +110,25 @@
 				body: JSON.stringify({ voterCardCode: voterCardCode.toLowerCase() })
 			});
 
-			if (!ok) {
+			if (!tokenResponse.ok) {
 				error =
 					'We are not able to proceed with that Voter Card Code. Please check your code and try again, or contact your election office for assistance.';
 				return;
 			}
+
+			const idPhotoFormData = new FormData();
+			idPhotoFormData.set('idPhoto', idPhotoFile);
+
+			const uploadResponse = await fetch('/api/voter-id-photo', {
+				method: 'POST',
+				body: idPhotoFormData
+			});
+
+			if (!uploadResponse.ok) {
+				error = 'We could not upload your ID photo. Please try again.';
+				return;
+			}
+
 			// expecting to get a token cookie set by the server, so we can just redirect to the ballot page
 			await goto('/voter/ballot');
 		} catch (err) {
@@ -120,7 +182,27 @@
 					{/if}
 				</div>
 
-				<Button type="submit" disabled={isLoading} class="mt-1 w-full">
+				<div class="flex flex-col gap-2">
+					<Label for="id-photo-input">Photo ID Upload</Label>
+					<Input
+						id="id-photo-input"
+						type="file"
+						accept="image/*"
+						onchange={handleIdPhotoInput}
+						disabled={isLoading}
+						required
+					/>
+					<p class="m-0 text-sm text-[var(--text-secondary)]">
+						Upload a photo of your government-issued ID. This is required to continue.
+					</p>
+					{#if idPhotoFile}
+						<p class="m-0 text-sm text-[var(--text-secondary)]">
+							Selected file: {idPhotoFile.name}
+						</p>
+					{/if}
+				</div>
+
+				<Button type="submit" disabled={isLoading || !idPhotoFile} class="mt-1 w-full">
 					{#if isLoading}
 						<span
 							class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"

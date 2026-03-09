@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import type { VoterCardDetailRow } from '$lib/server/utils/voter-card';
 import { type Template, BLANK_A4_PDF } from '@pdfme/common';
 import { generate } from '@pdfme/generator';
@@ -67,7 +68,7 @@ export class VoterCardGenerator {
 				{
 					name: 'voter_street_address',
 					type: 'text',
-					position: { x: pageSpacings.header.voterInfoSection.leftMargin, y: 40 },
+					position: { x: pageSpacings.header.voterInfoSection.leftMargin, y: 50 },
 					width: 200,
 					height: 32,
 					fontSize: 12,
@@ -76,7 +77,7 @@ export class VoterCardGenerator {
 				{
 					name: 'voter_city_state',
 					type: 'text',
-					position: { x: pageSpacings.header.voterInfoSection.leftMargin, y: 45 },
+					position: { x: pageSpacings.header.voterInfoSection.leftMargin, y: 55 },
 					width: 200,
 					height: 32,
 					fontSize: 12,
@@ -85,7 +86,7 @@ export class VoterCardGenerator {
 				{
 					name: 'voter_zip_code',
 					type: 'text',
-					position: { x: pageSpacings.header.voterInfoSection.leftMargin, y: 50 },
+					position: { x: pageSpacings.header.voterInfoSection.leftMargin, y: 60 },
 					width: 200,
 					height: 32,
 					fontSize: 12,
@@ -195,9 +196,13 @@ export class VoterCardGenerator {
 			'QR Code': barcodes.qrcode,
 			Image: image
 		};
+
+		const basedDomain = env.PUBLIC_BASE_VOTER_DOMAIN;
+		const computedUrl = `${basedDomain}/voter/start/?c=${this.voterCardCode}`;
+		console.log('Generating voter card with URL:', computedUrl);
 		const baseInputs = [
 			{
-				qr_scan_code: this.voterCardCode,
+				qr_scan_code: computedUrl,
 				voter_name: `${this.voterFirstName} ${this.voterLastName}`.toLocaleUpperCase(),
 				voter_street_address: this.voterStreetAddress,
 				voter_city_state: this.voterCityState,

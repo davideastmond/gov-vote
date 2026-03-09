@@ -1,8 +1,8 @@
 import { db } from '$lib/server/db';
-import { address, user, userAddress } from '$lib/server/db/schema';
+import { address, contestGroup, user, userAddress, voterIdPhoto } from '$lib/server/db/schema';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { error, fail } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 function getString(formData: FormData, field: string) {
@@ -39,8 +39,27 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const voter = rows.find((row) => row.streetAddress) ?? rows[0];
 
+	const voterIdPhotos = await db
+		.select({
+			id: voterIdPhoto.id,
+			contestGroupId: voterIdPhoto.contestGroupId,
+			contestGroupTitle: contestGroup.title,
+			photoUrl: voterIdPhoto.photoUrl,
+			uploadedAt: voterIdPhoto.updatedAt
+		})
+		.from(voterIdPhoto)
+		.innerJoin(contestGroup, eq(contestGroup.id, voterIdPhoto.contestGroupId))
+		.where(eq(voterIdPhoto.userId, params.userId))
+		.orderBy(desc(voterIdPhoto.updatedAt));
+
+	const voterIdPhotosWithProxyUrl = voterIdPhotos.map((photo) => ({
+		...photo,
+		photoProxyUrl: `/api/admin/voter-id-photo/${photo.id}`
+	}));
+
 	return {
-		voter
+		voter,
+		voterIdPhotos: voterIdPhotosWithProxyUrl
 	};
 };
 
