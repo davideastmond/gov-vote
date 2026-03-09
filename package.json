@@ -54,6 +54,7 @@
 	},
 	"dependencies": {
 		"@auth/sveltekit": "^1.11.1",
+		"@google-cloud/storage": "^7.19.0",
 		"@neondatabase/serverless": "^1.0.2",
 		"@pdfme/common": "^5.5.8",
 		"@pdfme/generator": "^5.5.8",
