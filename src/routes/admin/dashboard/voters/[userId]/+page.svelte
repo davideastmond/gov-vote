@@ -5,9 +5,33 @@
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { formatDate } from '$lib/utils/date';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+
+	let voterIdDialog = $state<HTMLDialogElement | null>(null);
+	let selectedVoterIdPhoto = $state<PageData['voterIdPhotos'][number] | null>(null);
+
+	function openVoterIdDialog(photo: PageData['voterIdPhotos'][number]) {
+		selectedVoterIdPhoto = photo;
+		voterIdDialog?.showModal();
+	}
+
+	function closeVoterIdDialog() {
+		voterIdDialog?.close();
+	}
+
+	function onVoterIdDialogCancel(event: Event) {
+		event.preventDefault();
+		closeVoterIdDialog();
+	}
+
+	function onVoterIdDialogClick(event: MouseEvent) {
+		if (event.target === voterIdDialog) {
+			closeVoterIdDialog();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -108,5 +132,73 @@
 				</Button>
 			</CardContent>
 		</Card>
+
+		<Card>
+			<CardHeader>
+				<CardTitle>Voter ID</CardTitle>
+			</CardHeader>
+			<CardContent>
+				{#if data.voterIdPhotos.length === 0}
+					<p class="text-sm text-(--text-secondary)">
+						No voter ID images uploaded for this voter yet.
+					</p>
+				{:else}
+					<div class="space-y-3">
+						{#each data.voterIdPhotos as photo (photo.id)}
+							<div
+								class="flex flex-col gap-3 rounded-md border border-(--border-primary) p-3 sm:flex-row sm:items-center sm:justify-between"
+							>
+								<div class="space-y-1">
+									<p class="text-sm font-semibold text-(--text-primary)">
+										{photo.contestGroupTitle}
+									</p>
+									<p class="text-xs text-(--text-secondary)">
+										Uploaded: {formatDate(photo.uploadedAt)}
+									</p>
+								</div>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onclick={() => openVoterIdDialog(photo)}
+								>
+									View
+								</Button>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</CardContent>
+		</Card>
 	</div>
 </main>
+
+<dialog
+	bind:this={voterIdDialog}
+	oncancel={onVoterIdDialogCancel}
+	onclick={onVoterIdDialogClick}
+	class="w-full max-w-3xl rounded-lg border border-(--border-primary) bg-(--bg-primary) p-0 text-(--text-primary)"
+>
+	{#if selectedVoterIdPhoto}
+		<div class="p-6">
+			<div class="mb-4 flex items-center justify-between gap-2">
+				<div>
+					<h2 class="text-xl font-semibold">{selectedVoterIdPhoto.contestGroupTitle}</h2>
+					<p class="text-sm text-(--text-secondary)">
+						Uploaded: {formatDate(selectedVoterIdPhoto.uploadedAt)}
+					</p>
+				</div>
+				<Button type="button" variant="outline" size="sm" onclick={closeVoterIdDialog}>Close</Button
+				>
+			</div>
+
+			<div class="overflow-hidden rounded-md border border-(--border-primary)">
+				<img
+					src={selectedVoterIdPhoto.photoProxyUrl}
+					alt={`Voter ID image for ${selectedVoterIdPhoto.contestGroupTitle}`}
+					class="max-h-[70vh] w-full object-contain"
+				/>
+			</div>
+		</div>
+	{/if}
+</dialog>
