@@ -21,6 +21,26 @@ It supports two primary experiences:
 
 ![Gov Vote admin login page](docs/screenshots/admin-login-page.png)
 
+### Admin dashboard
+
+![Gov Vote admin dashboard](docs/screenshots/admin-dashboard.png)
+
+### Admin voters management
+
+![Gov Vote admin voters management](docs/screenshots/admin-voters-manage.png)
+
+### Admin contest groups
+
+![Gov Vote admin contest groups](docs/screenshots/admin-contest-groups.png)
+
+### Admin polling stations
+
+![Gov Vote admin polling stations](docs/screenshots/admin-polling-stations.png)
+
+### Admin user management (super admin)
+
+![Gov Vote admin manage admins](docs/screenshots/admin-manage-admins.png)
+
 ## Features
 
 - Role-aware experience for `admin`, `super_admin`, and `voter` users.
