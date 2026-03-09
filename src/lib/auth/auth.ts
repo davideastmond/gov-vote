@@ -91,5 +91,6 @@ export const { signIn, signOut, handle } = SvelteKitAuth({
 	},
 	session: {
 		strategy: 'jwt'
-	}
+	},
+	trustHost: true
 });
