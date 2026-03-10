@@ -1,8 +1,7 @@
-import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { voterCard, voterIdPhoto } from '$lib/server/db/schema';
+import { getGcsStorageClient } from '$lib/server/utils/gcs-storage';
 import { verifyJWT } from '$lib/server/utils/jwt/jwt';
-import { Storage } from '@google-cloud/storage';
 import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 import { and, eq, or } from 'drizzle-orm';
@@ -23,14 +22,6 @@ function getFileExtension(file: File): string {
 	if (file.type === 'image/heic') return 'heic';
 
 	return 'bin';
-}
-
-function getStorageClient() {
-	if (env.GCP_PROJECT_ID) {
-		return new Storage({ projectId: env.GCP_PROJECT_ID });
-	}
-
-	return new Storage();
 }
 
 export const POST: RequestHandler = async (event) => {
@@ -90,7 +81,7 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		const storage = getStorageClient();
+		const storage = getGcsStorageClient();
 		const bucket = storage.bucket(VOTER_ID_BUCKET);
 		const fileBuffer = Buffer.from(await idPhoto.arrayBuffer());
 
