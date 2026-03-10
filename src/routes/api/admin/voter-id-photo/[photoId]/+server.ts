@@ -1,17 +1,8 @@
-import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
+import { getGcsStorageClient } from '$lib/server/utils/gcs-storage';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
-import { Storage } from '@google-cloud/storage';
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-
-function getStorageClient() {
-	if (env.GCP_PROJECT_ID) {
-		return new Storage({ projectId: env.GCP_PROJECT_ID });
-	}
-
-	return new Storage();
-}
 
 function parseGoogleStorageLocation(photoUrl: string): { bucketName: string; objectName: string } {
 	if (photoUrl.startsWith('gs://')) {
@@ -74,7 +65,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	}
 
 	const { bucketName, objectName } = parseGoogleStorageLocation(photoRecord.photoUrl);
-	const storage = getStorageClient();
+	const storage = getGcsStorageClient();
 	const file = storage.bucket(bucketName).file(objectName);
 
 	try {
