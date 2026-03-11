@@ -7,7 +7,7 @@ import type { AggregatedContestDetails } from './voter-card';
 
 const pageSpacings = {
 	sections: {
-		leftMargin: 100
+		leftMargin: 80
 	},
 	header: {
 		voterCardTitle: {},
@@ -259,6 +259,61 @@ export class VoterCardGenerator {
 			}>
 		>;
 	} {
+		const estimateCharsPerLine = (width: number, fontSize: number) => {
+			const averageGlyphWidth = fontSize * 0.55;
+			return Math.max(12, Math.floor(width / averageGlyphWidth));
+		};
+
+		const wrapText = (value: string, maxCharsPerLine: number): string[] => {
+			const normalized = value.replace(/\s+/g, ' ').trim();
+			if (!normalized) return [''];
+
+			const words = normalized.split(' ');
+			const lines: string[] = [];
+			let currentLine = '';
+
+			for (const word of words) {
+				if (!currentLine) {
+					if (word.length <= maxCharsPerLine) {
+						currentLine = word;
+						continue;
+					}
+
+					for (let i = 0; i < word.length; i += maxCharsPerLine) {
+						lines.push(word.slice(i, i + maxCharsPerLine));
+					}
+					continue;
+				}
+
+				const candidateLine = `${currentLine} ${word}`;
+				if (candidateLine.length <= maxCharsPerLine) {
+					currentLine = candidateLine;
+					continue;
+				}
+
+				lines.push(currentLine);
+				if (word.length <= maxCharsPerLine) {
+					currentLine = word;
+					continue;
+				}
+
+				for (let i = 0; i < word.length; i += maxCharsPerLine) {
+					const chunk = word.slice(i, i + maxCharsPerLine);
+					if (i + maxCharsPerLine >= word.length) {
+						currentLine = chunk;
+					} else {
+						lines.push(chunk);
+					}
+				}
+			}
+
+			if (currentLine) {
+				lines.push(currentLine);
+			}
+
+			return lines;
+		};
+
 		const groupedContests = new Map<
 			string,
 			{
@@ -359,94 +414,119 @@ export class VoterCardGenerator {
 			}
 		};
 
+		const addWrappedTextSchemas = ({
+			keyBase,
+			text,
+			x,
+			width,
+			fontSize,
+			fontFamily,
+			lineHeight
+		}: {
+			keyBase: string;
+			text: string;
+			x: number;
+			width: number;
+			fontSize: number;
+			fontFamily: string;
+			lineHeight: number;
+		}) => {
+			const maxCharsPerLine = estimateCharsPerLine(width, fontSize);
+			const lines = wrapText(text, maxCharsPerLine);
+
+			for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+				ensureSpace(lineHeight);
+
+				const lineKey = `${keyBase}_line_${lineIndex}`;
+				contestInputs[lineKey] = lines[lineIndex];
+				activePageSchemas.push({
+					name: lineKey,
+					type: 'text',
+					position: { x, y: yPosition },
+					width,
+					height: lineHeight,
+					fontSize,
+					fontFamily
+				});
+
+				yPosition += lineHeight;
+			}
+		};
+
 		const contests = Array.from(groupedContests.values());
 		if (!contests.length) {
 			const noContestKey = 'contest_empty_state';
-			contestInputs[noContestKey] = 'No eligible contests found for this voter card.';
-			firstPageSchemas.push({
-				name: noContestKey,
-				type: 'text',
-				position: { x: pageSpacings.sections.leftMargin - 20, y: yPosition },
+			addWrappedTextSchemas({
+				keyBase: noContestKey,
+				text: 'No eligible contests found for this voter card.',
+				x: pageSpacings.sections.leftMargin - 20,
 				width: 400,
-				height: 10,
 				fontSize: 11,
-				fontFamily: 'Helvetica-Oblique'
+				fontFamily: 'Helvetica-Oblique',
+				lineHeight: 6
 			});
 		}
 
 		for (let contestIndex = 0; contestIndex < contests.length; contestIndex += 1) {
-			ensureSpace(7);
-
 			const contest = contests[contestIndex];
 			const contestKey = `contest_title_${contestIndex}`;
-			contestInputs[contestKey] = `${contestIndex + 1}. ${contest.title}`;
-
-			activePageSchemas.push({
-				name: contestKey,
-				type: 'text',
-				position: { x: pageSpacings.sections.leftMargin - 20, y: yPosition },
+			addWrappedTextSchemas({
+				keyBase: contestKey,
+				text: `${contestIndex + 1}. ${contest.title}`,
+				x: pageSpacings.sections.leftMargin - 20,
 				width: 430,
-				height: 10,
 				fontSize: 12,
-				fontFamily: 'Helvetica-Bold'
+				fontFamily: 'Helvetica-Bold',
+				lineHeight: 6
 			});
 
-			yPosition += 7;
+			yPosition += 1;
 
 			if (contest.description) {
-				ensureSpace(6);
-
 				const descriptionKey = `contest_description_${contestIndex}`;
-				contestInputs[descriptionKey] = contest.description;
-				activePageSchemas.push({
-					name: descriptionKey,
-					type: 'text',
-					position: { x: pageSpacings.sections.leftMargin - 14, y: yPosition },
+				addWrappedTextSchemas({
+					keyBase: descriptionKey,
+					text: contest.description,
+					x: pageSpacings.sections.leftMargin - 14,
 					width: 430,
-					height: 10,
 					fontSize: 9,
-					fontFamily: 'Helvetica-Oblique'
+					fontFamily: 'Helvetica-Oblique',
+					lineHeight: 5
 				});
-				yPosition += 6;
+				yPosition += 1;
 			}
 
 			if (!contest.items.length) {
-				ensureSpace(6);
-
 				const noItemKey = `contest_no_items_${contestIndex}`;
-				contestInputs[noItemKey] = '• No contest items available';
-				activePageSchemas.push({
-					name: noItemKey,
-					type: 'text',
-					position: { x: pageSpacings.sections.leftMargin - 10, y: yPosition },
+				addWrappedTextSchemas({
+					keyBase: noItemKey,
+					text: '• No contest items available',
+					x: pageSpacings.sections.leftMargin - 10,
 					width: 420,
-					height: 10,
 					fontSize: 10,
-					fontFamily: 'Helvetica'
+					fontFamily: 'Helvetica',
+					lineHeight: 5
 				});
-				yPosition += 6;
+				yPosition += 1;
 			}
 
 			for (let itemIndex = 0; itemIndex < contest.items.length; itemIndex += 1) {
-				ensureSpace(6);
-
 				const item = contest.items[itemIndex];
 				const itemKey = `contest_item_${contestIndex}_${itemIndex}`;
 				const itemText = item.auxiliaryText
 					? `• ${item.title} (${item.auxiliaryText})`
 					: `• ${item.title}`;
 
-				contestInputs[itemKey] = itemText;
-				activePageSchemas.push({
-					name: itemKey,
-					type: 'text',
-					position: { x: pageSpacings.sections.leftMargin - 10, y: yPosition },
+				addWrappedTextSchemas({
+					keyBase: itemKey,
+					text: itemText,
+					x: pageSpacings.sections.leftMargin - 10,
 					width: 420,
-					height: 10,
 					fontSize: 10,
-					fontFamily: 'Helvetica'
+					fontFamily: 'Helvetica',
+					lineHeight: 5
 				});
-				yPosition += 6;
+				yPosition += 1;
 			}
 
 			yPosition += 4;
