@@ -9,6 +9,7 @@ import {
 	pollingStation
 } from '$lib/server/db/schema';
 import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
+import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
 import { createContestGroupBatchValidator } from '$lib/validators/create-contest-group-batch.validator';
 import { json } from '@sveltejs/kit';
 import z from 'zod';
@@ -49,31 +50,7 @@ export const POST: RequestHandler = async (event) => {
 	try {
 		validatedPayload = createContestGroupBatchValidator.parse(parsedBody);
 	} catch (error) {
-		if (error instanceof z.ZodError) {
-			const details = error.issues.map((issue) => {
-				const path = issue.path.join('.');
-				return `${path || 'Root'}: ${issue.message}`;
-			});
-
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Invalid request data',
-					details
-				},
-				{ status: 400 }
-			);
-		}
-
-		return json(
-			{
-				success: false,
-				error: 'Bad Request',
-				message: 'Invalid request data'
-			},
-			{ status: 400 }
-		);
+		return json(extractValidationErrors(error), { status: 400 });
 	}
 
 	const createdContestGroupIds: string[] = [];

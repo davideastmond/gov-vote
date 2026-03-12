@@ -1,12 +1,12 @@
 import { db } from '$lib/server/db';
 import { address, pollingStation } from '$lib/server/db/schema';
 import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
+import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
 import {
 	batchCreatePollingStationValidator,
 	type PollingStationEntry
 } from '$lib/validators/create-polling-station.validator';
 import { json } from '@sveltejs/kit';
-import { z } from 'zod';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async (event) => {
@@ -45,31 +45,7 @@ export const POST: RequestHandler = async (event) => {
 	try {
 		validatedEntries = batchCreatePollingStationValidator.parse(normalizedPayload);
 	} catch (err) {
-		if (err instanceof z.ZodError) {
-			const errors = err.issues.map((issue) => {
-				const path = issue.path.join('.');
-				return `${path || 'Root'}: ${issue.message}`;
-			});
-
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Invalid request data',
-					details: errors
-				},
-				{ status: 400 }
-			);
-		}
-
-		return json(
-			{
-				success: false,
-				error: 'Bad Request',
-				message: 'Invalid request data'
-			},
-			{ status: 400 }
-		);
+		return json(extractValidationErrors(err), { status: 400 });
 	}
 
 	try {

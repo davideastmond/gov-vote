@@ -1,12 +1,12 @@
 import { db } from '$lib/server/db';
 import { voterCard, voterEligibility } from '$lib/server/db/schema';
 import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
+import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
 import {
 	eligibilityValidator,
 	type EligibilityEntry
 } from '$lib/validators/create-eligibility.validator';
 import { json } from '@sveltejs/kit';
-import { z } from 'zod';
 import type { RequestHandler } from './$types';
 export const POST: RequestHandler = async (event) => {
 	try {
@@ -29,21 +29,7 @@ export const POST: RequestHandler = async (event) => {
 	try {
 		eligibilityValidator.parse(requestBody);
 	} catch (err) {
-		if (err instanceof z.ZodError) {
-			const errors = err.issues.map((issue) => {
-				const path = issue.path.join('.');
-				return `${path || 'Root'}: ${issue.message}`;
-			});
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Invalid request data',
-					details: errors
-				},
-				{ status: 400 }
-			);
-		}
+		return json(extractValidationErrors(err), { status: 400 });
 	}
 	try {
 		const { encounteredUserIds, encounteredPollingStationIds, encounteredContestGroupIds } =

@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
 import { address, user, userAddress } from '$lib/server/db/schema';
 import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
+import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
 import {
 	batchCreateUserValidator,
 	type UserEntry
@@ -8,7 +9,6 @@ import {
 import { json } from '@sveltejs/kit';
 import bcrypt from 'bcrypt';
 import { and, eq } from 'drizzle-orm';
-import z from 'zod';
 import type { RequestHandler } from './$types';
 
 // POST request handler for creating new voter users in batch
@@ -38,21 +38,7 @@ export const POST: RequestHandler = async (event) => {
 	try {
 		batchCreateUserValidator.parse(requestBody);
 	} catch (err) {
-		if (err instanceof z.ZodError) {
-			const errors = err.issues.map((issue) => {
-				const path = issue.path.join('.');
-				return `${path || 'Root'}: ${issue.message}`;
-			});
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Invalid request data',
-					details: errors
-				},
-				{ status: 400 }
-			);
-		}
+		return json(extractValidationErrors(err), { status: 400 });
 	}
 
 	try {

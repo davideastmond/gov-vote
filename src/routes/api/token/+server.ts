@@ -1,12 +1,12 @@
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { contest, contestGroup, user, voterCard, voterEligibility } from '$lib/server/db/schema';
+import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
 import { signJWT, verifyJWT } from '$lib/server/utils/jwt/jwt';
 import { tokenRequestValidator } from '$lib/validators/token-request.validator';
 import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 import { and, eq, or } from 'drizzle-orm';
-import z from 'zod';
 
 export const POST: RequestHandler = async (event) => {
 	// Validate the requestBody
@@ -14,21 +14,7 @@ export const POST: RequestHandler = async (event) => {
 	try {
 		tokenRequestValidator.parse(requestBody);
 	} catch (error) {
-		if (error instanceof z.ZodError) {
-			const errors = error.issues.map((issue) => {
-				const path = issue.path.join('.');
-				return `${path || 'Root'}: ${issue.message}`;
-			});
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Invalid request data',
-					details: errors
-				},
-				{ status: 400 }
-			);
-		}
+		return json(extractValidationErrors(error), { status: 400 });
 	}
 
 	// We get a voterIdCardCode. Check that it's valid and corresponds to a voter in the database. If so, generate a token for that voter and return it.

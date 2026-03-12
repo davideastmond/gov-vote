@@ -1,11 +1,10 @@
 import { command, getRequestEvent } from '$app/server';
 import { db } from '$lib/server/db';
 import { contest, voterCard, voterChoice, voterEligibility } from '$lib/server/db/schema';
+import { extractValidationErrorsObject } from '$lib/server/utils/extract-validation-errors';
 import { verifyJWT } from '$lib/server/utils/jwt/jwt';
 import { submittedBallotValidator } from '$lib/validators/submitted-ballet.validator';
 import { and, eq, inArray } from 'drizzle-orm';
-
-import z from 'zod';
 
 export const submitVoterBallot = command(
 	'unchecked',
@@ -15,15 +14,7 @@ export const submitVoterBallot = command(
 		try {
 			submittedBallotValidator.parse(ballotData);
 		} catch (error) {
-			if (error instanceof z.ZodError) {
-				const errors: Record<string, string> = {};
-				error.issues.forEach((issue) => {
-					if (issue.path.length > 0) {
-						errors[issue.path[0] as string] = issue.message;
-					}
-				});
-				return { success: false, errors };
-			}
+			return extractValidationErrorsObject(error);
 		}
 
 		// The voterCardCode is stored in the JWT, so we need to get the JWT from the cookies and verify it to get the voterCardCode and userId for this ballot submission
