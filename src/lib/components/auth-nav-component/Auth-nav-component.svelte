@@ -12,6 +12,7 @@
 <div class="auth-user flex items-center gap-2">
 	{#if username}
 		<p class="font-bold">{username}</p>
+		<a href="/admin/dashboard" class="underline hover:cursor-pointer">dashboard</a>
 		<button class="underline hover:cursor-pointer" onclick={handleSignOut}>sign out</button>
 	{:else}
 		<a href="/auth/signin" class="underline hover:cursor-pointer">admin sign in</a>
