@@ -163,7 +163,9 @@
 				{:else}
 					<div class="space-y-3">
 						{#each eligibleContestGroups as group (group.id)}
-							<div class="rounded-md border border-(--border-primary) p-3">
+							<div
+								class={`rounded-md border border-(--border-primary) p-3 ${group.status === 'closed' ? 'opacity-50' : ''}`}
+							>
 								<p class="text-sm font-semibold text-(--text-primary)">{group.title}</p>
 								<p class="truncate font-mono text-xs text-(--text-secondary)">{group.id}</p>
 								<p class="mt-1 text-xs text-(--text-secondary)">
@@ -221,7 +223,9 @@
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{#each filteredContestGroups as group (group.id)}
 					<button type="button" class="text-left" onclick={() => openGroupModal(group)}>
-						<Card class="h-full transition hover:border-(--text-secondary)">
+						<Card
+							class={`h-full transition hover:border-(--text-secondary) ${group.status === 'closed' ? ' opacity-50' : ''}`}
+						>
 							<CardHeader class="space-y-2">
 								<div class="flex items-center justify-between gap-2">
 									<CardTitle class="text-base">{group.title}</CardTitle>
