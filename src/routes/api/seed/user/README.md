@@ -2,7 +2,7 @@
 
 ## Overview
 
-This endpoint seeds the database with one admin user and one voter user for development and testing purposes.
+This endpoint seeds the database with one user for development and testing purposes.
 
 ## Endpoint
 
@@ -40,9 +40,20 @@ Requires a Bearer token in the `Authorization` header.
   - **Key**: `Authorization`
   - **Value**: `Bearer your-secret-token-here`
 
-### 3. Send the request
+### 3. Add request body
 
-No body is required for this endpoint.
+Body is required for this endpoint.
+
+```json
+{
+	"username": "admin",
+	"email": "admin@example.com",
+	"password": "adminpassword",
+	"firstName": "Admin",
+	"lastName": "User",
+	"role": "admin"
+}
+```
 
 ## Response Examples
 
@@ -51,21 +62,15 @@ No body is required for this endpoint.
 ```json
 {
 	"success": true,
-	"message": "Successfully seeded admin and voter users",
+	"message": "Successfully seeded user",
 	"data": {
-		"admin": {
+		"user": {
 			"id": "admin-1707854400000-abc123",
+			"username": "admin",
+			"email": "admin@example.com",
 			"firstName": "Admin",
 			"lastName": "User",
 			"role": "admin",
-			"createdAt": "2026-02-13T10:00:00.000Z",
-			"updatedAt": "2026-02-13T10:00:00.000Z"
-		},
-		"voter": {
-			"id": "voter-1707854400000-xyz789",
-			"firstName": "Sample",
-			"lastName": "Voter",
-			"role": "voter",
 			"createdAt": "2026-02-13T10:00:00.000Z",
 			"updatedAt": "2026-02-13T10:00:00.000Z"
 		}
@@ -91,6 +96,17 @@ No body is required for this endpoint.
 }
 ```
 
+### Error: Invalid Request Body (400)
+
+```json
+{
+	"success": false,
+	"error": "Bad Request",
+	"message": "Invalid request data",
+	"details": ["email: Email must be a valid email address"]
+}
+```
+
 ### Error: Server Error (500)
 
 ```json
@@ -105,7 +121,16 @@ No body is required for this endpoint.
 
 ```bash
 curl -X POST http://localhost:5173/api/seed/user \
-  -H "Authorization: Bearer your-secret-token-here"
+	-H "Authorization: Bearer your-secret-token-here" \
+	-H "Content-Type: application/json" \
+	-d '{
+		"username": "admin",
+		"email": "admin@example.com",
+		"password": "adminpassword",
+		"firstName": "Admin",
+		"lastName": "User",
+		"role": "admin"
+	}'
 ```
 
 ## Security Notes
