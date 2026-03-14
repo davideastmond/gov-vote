@@ -252,7 +252,7 @@
 	bind:this={modal}
 	oncancel={onDialogCancel}
 	onclick={onDialogClick}
-	class="w-full max-w-2xl rounded-lg border border-(--border-primary) bg-(--bg-primary) p-0 text-(--text-primary)"
+	class="w-full max-w-2xl rounded-lg border border-(--border-primary) bg-(--bg-primary) p-0 text-(--text-primary) lg:top-[5vh] lg:left-[30vw]"
 >
 	{#if selectedGroup}
 		<div class="bg-white p-6 dark:bg-black">
