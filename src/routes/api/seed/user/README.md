@@ -2,7 +2,7 @@
 
 ## Overview
 
-This endpoint seeds the database with one user for development and testing purposes.
+This endpoint seeds the database with one or more users for development and testing purposes.
 
 ## Endpoint
 
@@ -45,14 +45,24 @@ Requires a Bearer token in the `Authorization` header.
 Body is required for this endpoint.
 
 ```json
-{
-	"username": "admin",
-	"email": "admin@example.com",
-	"password": "adminpassword",
-	"firstName": "Admin",
-	"lastName": "User",
-	"role": "admin"
-}
+[
+	{
+		"username": "admin",
+		"email": "admin@example.com",
+		"password": "adminpassword",
+		"firstName": "Admin",
+		"lastName": "User",
+		"role": "admin"
+	},
+	{
+		"username": "voter1",
+		"email": "voter1@example.com",
+		"password": "voterpassword",
+		"firstName": "Jane",
+		"lastName": "Voter",
+		"role": "voter"
+	}
+]
 ```
 
 ## Response Examples
@@ -62,18 +72,30 @@ Body is required for this endpoint.
 ```json
 {
 	"success": true,
-	"message": "Successfully seeded user",
+	"message": "Successfully seeded users",
 	"data": {
-		"user": {
-			"id": "admin-1707854400000-abc123",
-			"username": "admin",
-			"email": "admin@example.com",
-			"firstName": "Admin",
-			"lastName": "User",
-			"role": "admin",
-			"createdAt": "2026-02-13T10:00:00.000Z",
-			"updatedAt": "2026-02-13T10:00:00.000Z"
-		}
+		"users": [
+			{
+				"id": "admin-1707854400000-abc123",
+				"username": "admin",
+				"email": "admin@example.com",
+				"firstName": "Admin",
+				"lastName": "User",
+				"role": "admin",
+				"createdAt": "2026-02-13T10:00:00.000Z",
+				"updatedAt": "2026-02-13T10:00:00.000Z"
+			},
+			{
+				"id": "voter1-1707854400000-def456",
+				"username": "voter1",
+				"email": "voter1@example.com",
+				"firstName": "Jane",
+				"lastName": "Voter",
+				"role": "voter",
+				"createdAt": "2026-02-13T10:00:00.000Z",
+				"updatedAt": "2026-02-13T10:00:00.000Z"
+			}
+		]
 	}
 }
 ```
@@ -123,14 +145,24 @@ Body is required for this endpoint.
 curl -X POST http://localhost:5173/api/seed/user \
 	-H "Authorization: Bearer your-secret-token-here" \
 	-H "Content-Type: application/json" \
-	-d '{
-		"username": "admin",
-		"email": "admin@example.com",
-		"password": "adminpassword",
-		"firstName": "Admin",
-		"lastName": "User",
-		"role": "admin"
-	}'
+	-d '[
+		{
+			"username": "admin",
+			"email": "admin@example.com",
+			"password": "adminpassword",
+			"firstName": "Admin",
+			"lastName": "User",
+			"role": "admin"
+		},
+		{
+			"username": "voter1",
+			"email": "voter1@example.com",
+			"password": "voterpassword",
+			"firstName": "Jane",
+			"lastName": "Voter",
+			"role": "voter"
+		}
+	]'
 ```
 
 ## Security Notes

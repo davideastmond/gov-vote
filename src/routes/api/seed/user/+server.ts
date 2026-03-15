@@ -8,9 +8,9 @@ import z from 'zod';
 import type { RequestHandler } from './$types';
 
 /**
- * POST endpoint to seed a user
+ * POST endpoint to seed users
  * Requires Authorization: Bearer <token> header
- * Creates one user from request body; id is generated server-side
+ * Creates users from request body array; id is generated server-side
  */
 
 const seedUserRequestValidator = z.object({
@@ -21,6 +21,10 @@ const seedUserRequestValidator = z.object({
 	lastName: z.string().min(1, 'Last name is required'),
 	role: z.enum(['admin', 'voter'], "Role must be either 'admin' or 'voter'")
 });
+
+const seedUsersRequestValidator = z
+	.array(seedUserRequestValidator)
+	.min(1, 'At least one user is required');
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -50,65 +54,46 @@ export const POST: RequestHandler = async ({ request }) => {
 			);
 		}
 
-		let validatedPayload: z.infer<typeof seedUserRequestValidator>;
+		let validatedPayload: z.infer<typeof seedUsersRequestValidator>;
 		try {
-			validatedPayload = seedUserRequestValidator.parse(parsedBody);
+			validatedPayload = seedUsersRequestValidator.parse(parsedBody);
 		} catch (error) {
 			return json(extractValidationErrors(error), { status: 400 });
 		}
 
-		const createdUserId = crypto.randomUUID();
-		const hashedPassword = await bcrypt.hash(validatedPayload.password, 10);
+		const usersToCreate = await Promise.all(
+			validatedPayload.map(async (entry) => ({
+				id: crypto.randomUUID(),
+				email: entry.email,
+				username: entry.username,
+				hashedPassword: await bcrypt.hash(entry.password, 10),
+				firstName: entry.firstName,
+				lastName: entry.lastName,
+				role: entry.role
+			}))
+		);
 
-		const createdUser = await db
-			.insert(user)
-			.values({
-				id: createdUserId,
-				email: validatedPayload.email,
-				username: validatedPayload.username,
-				hashedPassword,
-				firstName: validatedPayload.firstName,
-				lastName: validatedPayload.lastName,
-				role: validatedPayload.role
-			})
-			.returning();
+		const createdUsers = await db.insert(user).values(usersToCreate).returning();
 
-		const { hashedPassword: _hidden, ...safeUser } = createdUser[0];
+		const safeUsers = createdUsers.map(({ hashedPassword: _hidden, ...safeUser }) => safeUser);
 
 		return json(
 			{
 				success: true,
-				message: 'Successfully seeded user',
+				message: 'Successfully seeded users',
 				data: {
-					user: safeUser
+					users: safeUsers
 				}
 			},
 			{ status: 201 }
 		);
 	} catch (error) {
-		if (
-			typeof error === 'object' &&
-			error !== null &&
-			'code' in error &&
-			(error as { code?: string }).code === '23505'
-		) {
-			return json(
-				{
-					success: false,
-					error: 'Conflict',
-					message: 'A user with that username or email already exists.'
-				},
-				{ status: 409 }
-			);
-		}
-
 		console.error('Error seeding users:', error);
-
 		return json(
 			{
 				success: false,
 				error: 'Internal Server Error',
-				message: 'Failed to seed user',
+				message: 'Failed to seed users',
 				details: error instanceof Error ? error.message : 'Unknown error'
 			},
 			{ status: 500 }
