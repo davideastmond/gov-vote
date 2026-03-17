@@ -47,9 +47,14 @@
 						Search and manage contest groups ({data.totalCount} total)
 					</p>
 				</div>
-				<Button href="/admin/dashboard/contest-groups/create" variant="outline">
-					Create Contest Group
-				</Button>
+				<div class="flex flex-wrap gap-2">
+					<Button href="/admin/dashboard/contest-groups/create" variant="outline">
+						Create Contest Group
+					</Button>
+					<Button href="/admin/dashboard/contest-groups/create-batch" variant="outline">
+						Batch Create
+					</Button>
+				</div>
 			</div>
 		</header>
 
