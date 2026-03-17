@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { env } from '$env/dynamic/public';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -12,7 +13,7 @@
 	let idPhotoFile: File | null = null;
 	let isLoading = false;
 	let error: null | string = null;
-
+	let requireVoterID = env.PUBLIC_REQUIRE_VOTER_ID !== 'false'; // default to true if not set
 	onMount(() => {
 		const queryCode = new URL(window.location.href).searchParams.get('c');
 
@@ -116,17 +117,21 @@
 				return;
 			}
 
-			const idPhotoFormData = new FormData();
-			idPhotoFormData.set('idPhoto', idPhotoFile);
+			if (requireVoterID) {
+				const idPhotoFormData = new FormData();
+				idPhotoFormData.set('idPhoto', idPhotoFile);
 
-			const uploadResponse = await fetch('/api/voter-id-photo', {
-				method: 'POST',
-				body: idPhotoFormData
-			});
+				const uploadResponse = await fetch('/api/voter-id-photo', {
+					method: 'POST',
+					body: idPhotoFormData
+				});
 
-			if (!uploadResponse.ok) {
-				error = 'We could not upload your ID photo. Please try again.';
-				return;
+				if (!uploadResponse.ok) {
+					error = 'We could not upload your ID photo. Please try again.';
+					return;
+				}
+			} else {
+				console.warn('ID photo upload skipped because PUBLIC_REQUIRE_VOTER_ID is set to false');
 			}
 
 			// expecting to get a token cookie set by the server, so we can just redirect to the ballot page
