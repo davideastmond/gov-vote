@@ -130,7 +130,10 @@
 				{:else}
 					<div class="space-y-3">
 						{#each data.validVoterCards as voterCardRow (voterCardRow.id)}
-							<div class="rounded-md border border-(--border-primary) p-3">
+							<a
+								href={`/admin/dashboard/voter-cards/manage/${voterCardRow.id}`}
+								class="block rounded-md border border-(--border-primary) p-3 transition hover:border-(--text-secondary) focus-visible:ring-2 focus-visible:ring-(--text-secondary) focus-visible:outline-none"
+							>
 								<div class="flex items-center justify-between gap-2">
 									<p class="text-sm font-semibold text-(--text-primary)">
 										{voterCardRow.contestGroupTitle}
@@ -144,7 +147,7 @@
 								<p class="mt-2 text-xs text-(--text-secondary)">
 									Contest Group ID: {voterCardRow.contestGroupId}
 								</p>
-							</div>
+							</a>
 						{/each}
 					</div>
 				{/if}
