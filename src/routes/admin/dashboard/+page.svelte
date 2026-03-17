@@ -37,6 +37,10 @@
 				{
 					label: 'Create Contest Group',
 					url: '/admin/dashboard/contest-groups/create'
+				},
+				{
+					label: 'Batch Create Contest Groups',
+					url: '/admin/dashboard/contest-groups/create-batch'
 				}
 			],
 			accessLevel: ['admin', 'super_admin']
