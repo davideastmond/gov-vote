@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import type { UserRole } from '$lib/definitions/user.js';
 
 	const { data } = $props();
 
-	const userRole: Omit<UserRole, 'voter'> = data?.session?.user?.role || 'admin';
+	const userRole = $derived.by(() => data?.session?.user?.role || null);
 
 	const adminActions = [
 		{
