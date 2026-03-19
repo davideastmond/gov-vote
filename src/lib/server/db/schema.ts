@@ -183,6 +183,8 @@ export const voterIdPhoto = pgTable('voter_id_photo', {
 		.notNull()
 		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	photoUrl: text('photo_url').notNull(), // This is the URL of the ID photo stored in cloud storage
+	firstName: text('first_name'),
+	lastName: text('last_name'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });

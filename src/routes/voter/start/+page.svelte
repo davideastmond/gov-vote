@@ -9,6 +9,8 @@
 	import { onMount } from 'svelte';
 	import z from 'zod';
 
+	let firstName = '';
+	let lastName = '';
 	let voterCardCode = '';
 	let idPhotoFile: File | null = null;
 	let isLoading = false;
@@ -57,6 +59,20 @@
 		}
 	}
 
+	function handleNameInput(e: Event, field: 'firstName' | 'lastName') {
+		const target = e.target as HTMLInputElement;
+
+		if (field === 'firstName') {
+			firstName = target.value;
+		} else {
+			lastName = target.value;
+		}
+
+		if (error) {
+			error = null;
+		}
+	}
+
 	function handleIdPhotoInput(e: Event) {
 		const target = e.target as HTMLInputElement;
 		const selectedFile = target.files?.[0] ?? null;
@@ -89,6 +105,11 @@
 		e.preventDefault();
 		error = null;
 
+		if (!firstName.trim() || !lastName.trim()) {
+			error = 'First name and last name are required.';
+			return;
+		}
+
 		const result = z.uuid().safeParse(voterCardCode);
 		if (!result.success) {
 			error = 'Invalid Voter Card Code';
@@ -108,7 +129,9 @@
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ voterCardCode: voterCardCode.toLowerCase() })
+				body: JSON.stringify({
+					voterCardCode: voterCardCode.toLowerCase()
+				})
 			});
 
 			if (!tokenResponse.ok) {
@@ -120,6 +143,8 @@
 			if (requireVoterID) {
 				const idPhotoFormData = new FormData();
 				idPhotoFormData.set('idPhoto', idPhotoFile);
+				idPhotoFormData.set('firstName', firstName.trim());
+				idPhotoFormData.set('lastName', lastName.trim());
 
 				const uploadResponse = await fetch('/api/voter-id-photo', {
 					method: 'POST',
@@ -158,7 +183,7 @@
 		<CardHeader class="text-center">
 			<CardTitle class="text-4xl sm:text-2xl">Welcome, Voter</CardTitle>
 			<p class="m-0 text-base leading-normal text-[var(--text-secondary)]">
-				Please enter your Voter Card Code to begin voting
+				Please enter your name and Voter Card Code to begin voting
 			</p>
 		</CardHeader>
 		<CardContent>
@@ -185,6 +210,32 @@
 							{error}
 						</p>
 					{/if}
+				</div>
+
+				<div class="flex flex-col gap-2">
+					<Label for="first-name-input">First Name</Label>
+					<Input
+						id="first-name-input"
+						type="text"
+						placeholder="Enter your first name"
+						bind:value={firstName}
+						oninput={(e) => handleNameInput(e, 'firstName')}
+						disabled={isLoading}
+						required
+					/>
+				</div>
+
+				<div class="flex flex-col gap-2">
+					<Label for="last-name-input">Last Name</Label>
+					<Input
+						id="last-name-input"
+						type="text"
+						placeholder="Enter your last name"
+						bind:value={lastName}
+						oninput={(e) => handleNameInput(e, 'lastName')}
+						disabled={isLoading}
+						required
+					/>
 				</div>
 
 				<div class="flex flex-col gap-2">
