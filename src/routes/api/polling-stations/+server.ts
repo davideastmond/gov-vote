@@ -1,7 +1,6 @@
 import { db } from '$lib/server/db';
 import { address, pollingStation } from '$lib/server/db/schema';
-import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
-import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
+import { createAuthenticatedApiHandler } from '$lib/server/utils/create-authenticated-api-handler';
 import {
 	batchCreatePollingStationValidator,
 	type PollingStationEntry
@@ -9,51 +8,17 @@ import {
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async (event) => {
-	try {
-		await adminAuthorizationGuard(event);
-	} catch (error) {
-		return json(
-			{
-				success: false,
-				error: 'Unauthorized',
-				message:
-					'You must be an authenticated admin user or provide valid authentication credentials to access this endpoint.',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 400 }
-		);
-	}
-
-	let parsedBody: unknown;
-	try {
-		parsedBody = await event.request.json();
-	} catch {
-		return json(
-			{
-				success: false,
-				error: 'Bad Request',
-				message: 'Request body must be valid JSON.'
-			},
-			{ status: 400 }
-		);
-	}
-
-	const normalizedPayload = Array.isArray(parsedBody) ? parsedBody : [parsedBody];
-
-	let validatedEntries: PollingStationEntry[];
-	try {
-		validatedEntries = batchCreatePollingStationValidator.parse(normalizedPayload);
-	} catch (err) {
-		return json(extractValidationErrors(err), { status: 400 });
-	}
-
-	try {
+export const POST: RequestHandler = createAuthenticatedApiHandler({
+	requireAuth: true,
+	validator: batchCreatePollingStationValidator,
+	handler: async (data: unknown, event) => {
+		// Normalize payload to array format
+		const validatedEntries = Array.isArray(data) ? data : [data];
 		const insertedPollingStationIds: string[] = [];
 		const insertedAddressIds: string[] = [];
 		const skippedPollingStationIds: string[] = [];
 
-		for (const entry of validatedEntries) {
+		for (const entry of validatedEntries as PollingStationEntry[]) {
 			const foundAddress = await db.query.address.findFirst({
 				where: (addr, { and, eq }) =>
 					and(
@@ -107,16 +72,5 @@ export const POST: RequestHandler = async (event) => {
 			},
 			{ status: 201 }
 		);
-	} catch (error) {
-		console.error('Error creating polling stations:', error);
-		return json(
-			{
-				success: false,
-				error: 'Internal Server Error',
-				message: 'An error occurred while creating polling stations.',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 500 }
-		);
 	}
-};
+});

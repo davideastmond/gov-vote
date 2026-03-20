@@ -1,7 +1,6 @@
 import { db } from '$lib/server/db';
 import { address, user, userAddress } from '$lib/server/db/schema';
-import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
-import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
+import { createAuthenticatedApiHandler } from '$lib/server/utils/create-authenticated-api-handler';
 import {
 	batchCreateUserValidator,
 	type UserEntry
@@ -11,40 +10,15 @@ import bcrypt from 'bcrypt';
 import { and, eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
-// POST request handler for creating new voter users in batch
-// The request body should contain an array of voter objects.
-
-// Authenticated users hitting this endpoint from within the web app don't need bearer token auth.
-// External clients (e.g. scripts, Postman) must provide a valid bearer token in the Authorization header as well as username and password in the headers for basic auth. This is to prevent abuse of the endpoint by unauthorized parties while still allowing internal use without extra friction.
-export const POST: RequestHandler = async (event) => {
-	// Security layer
-
-	try {
-		await adminAuthorizationGuard(event);
-	} catch (error) {
-		return json(
-			{
-				success: false,
-				error: 'Unauthorized',
-				message:
-					'You must be an authenticated admin user or provide valid authentication credentials to access this endpoint.',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 400 }
-		);
-	}
-	// Validation of request body
-	const requestBody: Array<UserEntry> = await event.request.json();
-	try {
-		batchCreateUserValidator.parse(requestBody);
-	} catch (err) {
-		return json(extractValidationErrors(err), { status: 400 });
-	}
-
-	try {
+export const POST: RequestHandler = createAuthenticatedApiHandler({
+	requireAuth: true,
+	validator: batchCreateUserValidator,
+	handler: async (requestBody: unknown, event) => {
 		const insertedUserIds: string[] = [];
 		const insertedAddressIds: string[] = [];
-		for await (const userEntry of requestBody) {
+		const userEntries = requestBody as UserEntry[];
+
+		for await (const userEntry of userEntries) {
 			const userAddressData = await db
 				.select()
 				.from(address)
@@ -119,26 +93,15 @@ async function insertUser(userEntry: UserEntry): Promise<string> {
 		hashedPassword: bcrypt.hashSync(crypto.randomUUID(), 10),
 		role: 'voter'
 	});
-	return userId;
-}
-
-async function insertUserAddress(userId: string, addressId: string): Promise<void> {
-	await db.insert(userAddress).values({
-		id: crypto.randomUUID(),
-		userId,
-		addressId
-	});
-}
-
-/**
- * There is no address and no user. Create both and link them.
- * @param userEntry
- */
-async function insertAllNewData(
-	userEntry: UserEntry
-): Promise<{ addressId: string; userId: string }> {
-	const addressId = await insertAddress(userEntry);
-	const userId = await insertUser(userEntry);
-	await insertUserAddress(userId, addressId);
-	return { addressId, userId };
-}
+		return json(
+			{
+				success: true,
+				data: {
+					insertedUserIds,
+					insertedAddressIds
+				}
+			},
+			{ status: 201 }
+		);
+	}
+});

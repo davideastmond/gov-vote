@@ -1,63 +1,34 @@
 import { db } from '$lib/server/db';
 import { voterCard, voterEligibility } from '$lib/server/db/schema';
-import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
-import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
+import { createAuthenticatedApiHandler } from '$lib/server/utils/create-authenticated-api-handler';
 import {
 	eligibilityValidator,
 	type EligibilityEntry
 } from '$lib/validators/create-eligibility.validator';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-export const POST: RequestHandler = async (event) => {
-	try {
-		await adminAuthorizationGuard(event);
-	} catch (error) {
-		return json(
-			{
-				success: false,
-				error: 'Unauthorized',
-				message:
-					'You must be an authenticated admin user or provide valid authentication credentials to access this endpoint.',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 400 }
-		);
-	}
 
-	// Validate the request body
-	const requestBody: Array<EligibilityEntry> = await event.request.json();
-	try {
-		eligibilityValidator.parse(requestBody);
-	} catch (err) {
-		return json(extractValidationErrors(err), { status: 400 });
-	}
-	try {
+export const POST: RequestHandler = createAuthenticatedApiHandler({
+	requireAuth: true,
+	validator: eligibilityValidator,
+	handler: async (requestBody: unknown, event) => {
+		const entries = requestBody as EligibilityEntry[];
 		const { encounteredUserIds, encounteredPollingStationIds, encounteredContestGroupIds } =
-			await processEligibilityEntries(requestBody);
+			await processEligibilityEntries(entries);
 		await createVoterCardFromEligibility(encounteredUserIds, encounteredContestGroupIds);
 
 		return json({
 			success: true,
 			message: 'Eligibility entries processed successfully.',
 			details: {
-				processedEntries: requestBody.length,
+				processedEntries: entries.length,
 				uniqueUsers: encounteredUserIds.size,
 				uniquePollingStations: encounteredPollingStationIds.size,
 				uniqueContestGroups: encounteredContestGroupIds.size
 			}
 		});
-	} catch (err) {
-		return json(
-			{
-				success: false,
-				error: 'Internal Server Error',
-				message: 'An error occurred while processing the eligibility entries.',
-				details: err instanceof Error ? err.message : 'Unknown error'
-			},
-			{ status: 500 }
-		);
 	}
-};
+});
 
 async function processEligibilityEntries(entries: EligibilityEntry[]): Promise<{
 	encounteredUserIds: Set<string>;
