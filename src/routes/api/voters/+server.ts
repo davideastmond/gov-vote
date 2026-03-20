@@ -1,13 +1,14 @@
 import { db } from '$lib/server/db';
 import { address, user, userAddress } from '$lib/server/db/schema';
 import { createAuthenticatedApiHandler } from '$lib/server/utils/create-authenticated-api-handler';
+import { findAddressByComponents } from '$lib/server/utils/find-address-by-components';
 import {
 	batchCreateUserValidator,
 	type UserEntry
 } from '$lib/validators/batch-create-user.validator';
 import { json } from '@sveltejs/kit';
 import bcrypt from 'bcrypt';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = createAuthenticatedApiHandler({
@@ -19,17 +20,17 @@ export const POST: RequestHandler = createAuthenticatedApiHandler({
 		const userEntries = requestBody as UserEntry[];
 
 		for await (const userEntry of userEntries) {
+			const foundAddress = await findAddressByComponents({
+				streetAddress: userEntry.streetAddress,
+				city: userEntry.city,
+				state: userEntry.state,
+				zipCode: userEntry.zipCode
+			});
+
 			const userAddressData = await db
 				.select()
 				.from(address)
-				.where(
-					and(
-						eq(address.streetAddress, userEntry.streetAddress),
-						eq(address.city, userEntry.city),
-						eq(address.state, userEntry.state),
-						eq(address.zipCode, userEntry.zipCode)
-					)
-				)
+				.where(eq(address.id, foundAddress?.id ?? ''))
 				.leftJoin(userAddress, eq(address.id, userAddress.addressId))
 				.leftJoin(user, eq(userAddress.userId, user.id));
 
@@ -56,19 +57,8 @@ export const POST: RequestHandler = createAuthenticatedApiHandler({
 			},
 			{ status: 201 }
 		);
-	} catch (err) {
-		console.error('Error creating voters:', err);
-		return json(
-			{
-				success: false,
-				error: 'Internal Server Error',
-				message: 'An error occurred while creating voters.',
-				details: err instanceof Error ? err.message : 'Unknown error'
-			},
-			{ status: 500 }
-		);
 	}
-};
+});
 
 async function insertAddress(userEntry: UserEntry): Promise<string> {
 	const addressId = crypto.randomUUID();
@@ -93,15 +83,22 @@ async function insertUser(userEntry: UserEntry): Promise<string> {
 		hashedPassword: bcrypt.hashSync(crypto.randomUUID(), 10),
 		role: 'voter'
 	});
-		return json(
-			{
-				success: true,
-				data: {
-					insertedUserIds,
-					insertedAddressIds
-				}
-			},
-			{ status: 201 }
-		);
-	}
-});
+	return userId;
+}
+
+async function insertUserAddress(userId: string, addressId: string): Promise<void> {
+	await db.insert(userAddress).values({
+		id: crypto.randomUUID(),
+		userId,
+		addressId
+	});
+}
+
+async function insertAllNewData(
+	userEntry: UserEntry
+): Promise<{ addressId: string; userId: string }> {
+	const addressId = await insertAddress(userEntry);
+	const userId = await insertUser(userEntry);
+	await insertUserAddress(userId, addressId);
+	return { addressId, userId };
+}
