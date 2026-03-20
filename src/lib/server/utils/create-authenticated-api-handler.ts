@@ -1,6 +1,7 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 import type { ZodSchema } from 'zod';
 import { adminAuthorizationGuard } from './admin-authorization-guard';
+import { apiBadRequest, apiInternalError, apiUnauthorized } from './api-response-helpers';
 import { extractValidationErrors } from './extract-validation-errors';
 
 export type ApiHandlerOptions<T> = {
@@ -31,16 +32,7 @@ export function createAuthenticatedApiHandler<T = unknown>(options: ApiHandlerOp
 			try {
 				await adminAuthorizationGuard(event);
 			} catch (error) {
-				return json(
-					{
-						success: false,
-						error: 'Unauthorized',
-						message:
-							'You must be an authenticated admin user or provide valid authentication credentials to access this endpoint.',
-						details: error instanceof Error ? error.message : 'Unknown error'
-					},
-					{ status: 400 }
-				);
+				return apiUnauthorized(error instanceof Error ? error.message : 'Unknown error');
 			}
 		}
 
@@ -48,15 +40,8 @@ export function createAuthenticatedApiHandler<T = unknown>(options: ApiHandlerOp
 		let parsedBody: unknown;
 		try {
 			parsedBody = await event.request.json();
-		} catch (error) {
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Request body must be valid JSON.'
-				},
-				{ status: 400 }
-			);
+		} catch {
+			return apiBadRequest();
 		}
 
 		// Step 3: Validate against schema if provided
@@ -73,14 +58,9 @@ export function createAuthenticatedApiHandler<T = unknown>(options: ApiHandlerOp
 			return await handler(parsedBody as T, event);
 		} catch (err) {
 			console.error('Error in API handler:', err);
-			return json(
-				{
-					success: false,
-					error: 'Internal Server Error',
-					message: 'An error occurred while processing your request.',
-					details: err instanceof Error ? err.message : 'Unknown error'
-				},
-				{ status: 500 }
+			return apiInternalError(
+				'An error occurred while processing your request.',
+				err instanceof Error ? err.message : 'Unknown error'
 			);
 		}
 	};

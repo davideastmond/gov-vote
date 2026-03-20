@@ -8,6 +8,7 @@ import {
 	contestItem,
 	pollingStation
 } from '$lib/server/db/schema';
+import { apiInternalError } from '$lib/server/utils/api-response-helpers';
 import { createAuthenticatedApiHandler } from '$lib/server/utils/create-authenticated-api-handler';
 import { createContestGroupBatchValidator } from '$lib/validators/create-contest-group-batch.validator';
 import { json } from '@sveltejs/kit';
@@ -108,14 +109,9 @@ export const POST: RequestHandler = createAuthenticatedApiHandler({
 		}
 
 		if (createdContestGroupIds.length === 0) {
-			return json(
-				{
-					success: false,
-					error: 'Internal Server Error',
-					message: 'Failed to create any contest groups.',
-					details: failedContestGroups
-				},
-				{ status: 500 }
+			return apiInternalError(
+				'Failed to create any contest groups.',
+				JSON.stringify(failedContestGroups)
 			);
 		}
 

@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
+import { apiBadRequest, apiInternalError } from '$lib/server/utils/api-response-helpers';
 import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
 import { checkAuthToken, getAuthTokenFromHeader } from '$lib/server/utils/header-request';
 import { json } from '@sveltejs/kit';
@@ -44,14 +45,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		try {
 			parsedBody = await request.json();
 		} catch {
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Request body must be valid JSON.'
-				},
-				{ status: 400 }
-			);
+			return apiBadRequest();
 		}
 
 		let validatedPayload: z.infer<typeof seedUsersRequestValidator>;
@@ -89,14 +83,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		);
 	} catch (error) {
 		console.error('Error seeding users:', error);
-		return json(
-			{
-				success: false,
-				error: 'Internal Server Error',
-				message: 'Failed to seed users',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 500 }
+		return apiInternalError(
+			'Failed to seed users',
+			error instanceof Error ? error.message : 'Unknown error'
 		);
 	}
 };
