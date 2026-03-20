@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
 import { address, pollingStation } from '$lib/server/db/schema';
 import { createAuthenticatedApiHandler } from '$lib/server/utils/create-authenticated-api-handler';
+import { findAddressByComponents } from '$lib/server/utils/find-address-by-components';
 import {
 	batchCreatePollingStationValidator,
 	type PollingStationEntry
@@ -19,14 +20,11 @@ export const POST: RequestHandler = createAuthenticatedApiHandler({
 		const skippedPollingStationIds: string[] = [];
 
 		for (const entry of validatedEntries as PollingStationEntry[]) {
-			const foundAddress = await db.query.address.findFirst({
-				where: (addr, { and, eq }) =>
-					and(
-						eq(addr.streetAddress, entry.streetAddress),
-						eq(addr.city, entry.city),
-						eq(addr.state, entry.state),
-						eq(addr.zipCode, entry.zipCode)
-					)
+			const foundAddress = await findAddressByComponents({
+				streetAddress: entry.streetAddress,
+				city: entry.city,
+				state: entry.state,
+				zipCode: entry.zipCode
 			});
 
 			const addressId = foundAddress?.id ?? crypto.randomUUID();

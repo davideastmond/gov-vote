@@ -7,6 +7,7 @@ import {
 	contestItem,
 	pollingStation
 } from '$lib/server/db/schema';
+import { findAddressByComponents } from '$lib/server/utils/find-address-by-components';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { error, fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
@@ -255,14 +256,11 @@ export const actions: Actions = {
 			});
 		}
 
-		const foundAddress = await db.query.address.findFirst({
-			where: (addr, { and, eq }) =>
-				and(
-					eq(addr.streetAddress, streetAddress),
-					eq(addr.city, city),
-					eq(addr.state, state),
-					eq(addr.zipCode, zipCode)
-				)
+		const foundAddress = await findAddressByComponents({
+			streetAddress,
+			city,
+			state,
+			zipCode
 		});
 
 		const addressId = foundAddress?.id ?? crypto.randomUUID();

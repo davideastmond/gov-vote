@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db';
 import { address, contestGroup, user, userAddress, voterIdPhoto } from '$lib/server/db/schema';
+import { findAddressByComponents } from '$lib/server/utils/find-address-by-components';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { error, fail } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';
@@ -104,14 +105,11 @@ export const actions: Actions = {
 			where: (ua, { eq }) => eq(ua.userId, params.userId)
 		});
 
-		const matchingAddress = await db.query.address.findFirst({
-			where: (a, { and, eq }) =>
-				and(
-					eq(a.streetAddress, streetAddress),
-					eq(a.city, city),
-					eq(a.state, state),
-					eq(a.zipCode, zipCode)
-				)
+		const matchingAddress = await findAddressByComponents({
+			streetAddress,
+			city,
+			state,
+			zipCode
 		});
 
 		let nextAddressId = matchingAddress?.id;
