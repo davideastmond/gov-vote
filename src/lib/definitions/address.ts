@@ -8,6 +8,10 @@ export type Address = {
 
 export type AddressInput = Omit<Address, 'id'>;
 
+export type NullableAddressInput = {
+	[K in keyof AddressInput]: AddressInput[K] | null;
+};
+
 export type PollingStationAddress = {
 	name: string;
 } & Address;

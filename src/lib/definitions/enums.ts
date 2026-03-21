@@ -9,3 +9,6 @@ export type VoterCardStatus = (typeof VOTER_CARD_STATUS_VALUES)[number];
 
 export const VOTER_CARD_STATUS_FILTER_VALUES = ['all', ...VOTER_CARD_STATUS_VALUES] as const;
 export type VoterCardStatusFilter = (typeof VOTER_CARD_STATUS_FILTER_VALUES)[number];
+
+export const THEME_VALUES = ['light', 'dark'] as const;
+export type Theme = (typeof THEME_VALUES)[number];

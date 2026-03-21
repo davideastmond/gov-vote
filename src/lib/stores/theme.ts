@@ -1,7 +1,6 @@
 import { browser } from '$app/environment';
+import type { Theme } from '$lib/definitions/enums';
 import { writable } from 'svelte/store';
-
-type Theme = 'light' | 'dark';
 
 function createThemeStore() {
 	const applyTheme = (theme: Theme) => {

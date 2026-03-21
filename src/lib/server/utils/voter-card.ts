@@ -1,15 +1,12 @@
-import type { VoterCardStatus } from '$lib/utils/voter-card';
+import type { NullableAddressInput } from '$lib/definitions/address';
+import type { VoterCardStatus } from '$lib/definitions/enums';
 
-export type VoterCardBaseFields = {
+export type VoterCardBaseFields = NullableAddressInput & {
 	id: string;
 	cardNumber: string;
 	status: VoterCardStatus;
 	firstName: string;
 	lastName: string;
-	streetAddress: string | null;
-	city: string | null;
-	state: string | null;
-	zipCode: string | null;
 	contestGroupName: string;
 };
 

@@ -1,10 +1,6 @@
+import type { ValidationErrorsObject, ValidationResponse } from '$lib/definitions/validation';
 import z from 'zod';
-type ValidationResponse = {
-	success: boolean;
-	error: string;
-	message: string;
-	details?: string[] | string;
-};
+
 export const extractValidationErrors = (err: unknown): ValidationResponse => {
 	if (err instanceof z.ZodError) {
 		const errors = err.issues.map((issue) => {
@@ -25,11 +21,7 @@ export const extractValidationErrors = (err: unknown): ValidationResponse => {
 	};
 };
 
-export const extractValidationErrorsObject = (
-	err: unknown
-): Omit<ValidationResponse, 'error' | 'message' | 'details'> & {
-	errors: Record<string, string>;
-} => {
+export const extractValidationErrorsObject = (err: unknown): ValidationErrorsObject => {
 	if (err instanceof z.ZodError) {
 		const errors: Record<string, string> = {};
 		err.issues.forEach((issue) => {

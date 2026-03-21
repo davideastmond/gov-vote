@@ -1,3 +1,4 @@
+import type { NullableAddressInput } from '$lib/definitions/address';
 import { db } from '$lib/server/db';
 import { address, user, userAddress } from '$lib/server/db/schema';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
@@ -10,18 +11,16 @@ export const load: PageServerLoad = async (event) => {
 	const searchQuery = event.url.searchParams.get('q')?.trim() ?? '';
 	const hasSearched = searchQuery.length > 0;
 
-	let voters: Array<{
-		id: string;
-		firstName: string;
-		lastName: string;
-		username: string;
-		email: string;
-		streetAddress: string | null;
-		city: string | null;
-		state: string | null;
-		zipCode: string | null;
-		createdAt: Date;
-	}> = [];
+	let voters: Array<
+		NullableAddressInput & {
+			id: string;
+			firstName: string;
+			lastName: string;
+			username: string;
+			email: string;
+			createdAt: Date;
+		}
+	> = [];
 
 	if (hasSearched) {
 		const rows = await db
