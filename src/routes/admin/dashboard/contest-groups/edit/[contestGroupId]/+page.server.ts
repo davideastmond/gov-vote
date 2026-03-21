@@ -1,3 +1,4 @@
+import type { ContestItemType, ContestStatus } from '$lib/definitions/enums';
 import { db } from '$lib/server/db';
 import {
 	address,
@@ -132,7 +133,7 @@ export const actions: Actions = {
 		await db
 			.update(contestGroup)
 			.set({
-				contestGroupStatus: contestGroupStatus as 'upcoming' | 'active' | 'closed',
+				contestGroupStatus: contestGroupStatus as ContestStatus,
 				updatedAt: new Date()
 			})
 			.where(eq(contestGroup.id, params.contestGroupId));
@@ -196,7 +197,7 @@ export const actions: Actions = {
 		await db
 			.update(contest)
 			.set({
-				contestStatus: contestStatus as 'upcoming' | 'active' | 'closed',
+				contestStatus: contestStatus as ContestStatus,
 				updatedAt: new Date()
 			})
 			.where(and(eq(contest.id, contestId), eq(contest.contestGroupId, params.contestGroupId)));
@@ -420,7 +421,7 @@ export const actions: Actions = {
 			.set({
 				title,
 				auxiliaryText,
-				contestItemType: contestItemType as 'candidate' | 'initiative' | 'other',
+				contestItemType: contestItemType as ContestItemType,
 				updatedAt: new Date()
 			})
 			.where(and(eq(contestItem.id, contestItemId), eq(contestItem.contestId, contestId)));
@@ -475,7 +476,7 @@ export const actions: Actions = {
 			contestId,
 			title,
 			auxiliaryText,
-			contestItemType: contestItemType as 'candidate' | 'initiative' | 'other'
+			contestItemType: contestItemType as ContestItemType
 		});
 
 		return {

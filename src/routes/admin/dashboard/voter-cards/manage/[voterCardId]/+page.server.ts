@@ -1,3 +1,4 @@
+import type { VoterCardStatus } from '$lib/definitions/enums';
 import { db } from '$lib/server/db';
 import {
 	address,
@@ -147,7 +148,7 @@ export const actions: Actions = {
 		await db
 			.update(voterCard)
 			.set({
-				cardStatus: cardStatus as 'generated' | 'active' | 'inactive',
+				cardStatus: cardStatus as VoterCardStatus,
 				updatedAt: new Date()
 			})
 			.where(eq(voterCard.id, params.voterCardId));

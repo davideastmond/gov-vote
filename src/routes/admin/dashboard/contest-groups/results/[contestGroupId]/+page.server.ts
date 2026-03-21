@@ -1,3 +1,4 @@
+import type { ContestItemType, ContestStatus } from '$lib/definitions/enums';
 import { db } from '$lib/server/db';
 import { contest, contestItem, voterChoice } from '$lib/server/db/schema';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
@@ -8,7 +9,7 @@ import type { PageServerLoad } from './$types';
 type ItemResult = {
 	contestItemId: string;
 	contestItemTitle: string;
-	contestItemType: 'candidate' | 'initiative' | 'other';
+	contestItemType: ContestItemType;
 	voteCount: number;
 	voteShare: number;
 };
@@ -16,7 +17,7 @@ type ItemResult = {
 type ContestResult = {
 	contestId: string;
 	contestTitle: string;
-	contestStatus: 'upcoming' | 'active' | 'closed';
+	contestStatus: ContestStatus;
 	totalVotes: number;
 	items: ItemResult[];
 };
