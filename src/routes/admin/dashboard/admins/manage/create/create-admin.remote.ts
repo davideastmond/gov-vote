@@ -6,13 +6,10 @@ import { user } from '$lib/server/db/schema';
 import { extractValidationErrorsObject } from '$lib/server/utils/extract-validation-errors';
 import { createAdminValidator } from '$lib/validators/create-admin.validator';
 import bcrypt from 'bcrypt';
-type CreateAdminData = {
-	email: string;
-	firstName: string;
-	lastName: string;
-	password: string;
-	username: string;
-};
+import type { z } from 'zod';
+
+type CreateAdminData = z.infer<typeof createAdminValidator>;
+
 export const createAdminUser = command(
 	'unchecked',
 	async (data: CreateAdminData): Promise<{ errors: Record<string, string> } | void> => {

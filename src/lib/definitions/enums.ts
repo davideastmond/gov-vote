@@ -6,3 +6,6 @@ export type ContestStatus = (typeof CONTEST_STATUS_VALUES)[number];
 
 export const VOTER_CARD_STATUS_VALUES = ['generated', 'active', 'inactive'] as const;
 export type VoterCardStatus = (typeof VOTER_CARD_STATUS_VALUES)[number];
+
+export const VOTER_CARD_STATUS_FILTER_VALUES = ['all', ...VOTER_CARD_STATUS_VALUES] as const;
+export type VoterCardStatusFilter = (typeof VOTER_CARD_STATUS_FILTER_VALUES)[number];
