@@ -10,7 +10,7 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let searchInput = $state(data.searchQuery);
+	let searchInput = $derived(data.searchQuery);
 
 	function handleSearch(e: Event) {
 		const form = (e.target as HTMLInputElement).form;
