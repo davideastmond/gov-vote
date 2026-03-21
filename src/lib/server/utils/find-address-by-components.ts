@@ -1,18 +1,12 @@
+import type { AddressInput } from '$lib/definitions/address';
 import { db } from '$lib/server/db';
-
-export type AddressComponents = {
-	streetAddress: string;
-	city: string;
-	state: string;
-	zipCode: string;
-};
 
 export async function findAddressByComponents({
 	streetAddress,
 	city,
 	state,
 	zipCode
-}: AddressComponents) {
+}: AddressInput) {
 	return db.query.address.findFirst({
 		where: (addr, { and, eq }) =>
 			and(

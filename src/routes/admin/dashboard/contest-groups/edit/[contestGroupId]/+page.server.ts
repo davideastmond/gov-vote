@@ -1,4 +1,9 @@
-import type { ContestItemType, ContestStatus } from '$lib/definitions/enums';
+import {
+	CONTEST_ITEM_TYPE_VALUES,
+	CONTEST_STATUS_VALUES,
+	type ContestItemType,
+	type ContestStatus
+} from '$lib/definitions/enums';
 import { db } from '$lib/server/db';
 import {
 	address,
@@ -122,7 +127,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const contestGroupStatus = getString(formData, 'contestGroupStatus');
 
-		if (!['upcoming', 'active', 'closed'].includes(contestGroupStatus)) {
+		if (![...CONTEST_STATUS_VALUES].includes(contestGroupStatus as ContestStatus)) {
 			return fail(400, {
 				action: 'updateGroupStatus',
 				success: false,
@@ -186,7 +191,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!['upcoming', 'active', 'closed'].includes(contestStatus)) {
+		if (![...CONTEST_STATUS_VALUES].includes(contestStatus as ContestStatus)) {
 			return fail(400, {
 				action: 'updateContestStatus',
 				success: false,
@@ -395,7 +400,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!['candidate', 'initiative', 'other'].includes(contestItemType)) {
+		if (![...CONTEST_ITEM_TYPE_VALUES].includes(contestItemType as ContestItemType)) {
 			return fail(400, {
 				action: 'updateContestItem',
 				success: false,
@@ -450,7 +455,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!['candidate', 'initiative', 'other'].includes(contestItemType)) {
+		if (![...CONTEST_ITEM_TYPE_VALUES].includes(contestItemType as ContestItemType)) {
 			return fail(400, {
 				action: 'addContestItem',
 				success: false,
