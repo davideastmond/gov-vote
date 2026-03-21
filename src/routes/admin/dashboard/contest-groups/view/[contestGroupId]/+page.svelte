@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Separator } from '$lib/components/ui/separator';
+	import type { ContestItemType, ContestStatus } from '$lib/definitions/enums';
 
 	let { data } = $props();
 
@@ -61,12 +62,12 @@
 		[] as Array<{
 			title: string;
 			description: string | null;
-			status: 'upcoming' | 'active' | 'closed' | null;
+			status: ContestStatus | null;
 			items: Array<{
 				id: string;
 				title: string;
 				auxiliaryText: string | null;
-				type: 'candidate' | 'initiative' | 'other';
+				type: ContestItemType;
 			}>;
 		}>
 	);
@@ -76,12 +77,12 @@
 		return value;
 	}
 
-	function formatStatus(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+	function formatStatus(status: ContestStatus | null | undefined) {
 		if (!status) return 'Not specified';
 		return status.charAt(0).toUpperCase() + status.slice(1);
 	}
 
-	function statusVariant(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+	function statusVariant(status: ContestStatus | null | undefined) {
 		if (status === 'closed') return 'destructive' as const;
 		if (status === 'upcoming') return 'secondary' as const;
 		return 'default' as const;

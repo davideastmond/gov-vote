@@ -1,3 +1,4 @@
+import type { UserRole } from '$lib/definitions/user';
 import { db } from '$lib/server/db';
 import { SvelteKitAuth, type DefaultSession } from '@auth/sveltekit';
 import Credentials from '@auth/sveltekit/providers/credentials';
@@ -7,7 +8,7 @@ import bcrypt from 'bcrypt';
 declare module '@auth/sveltekit' {
 	interface Session {
 		user: {
-			role: 'admin' | 'voter' | 'super_admin';
+			role: UserRole;
 			username: string;
 			firstName: string;
 			lastName: string;

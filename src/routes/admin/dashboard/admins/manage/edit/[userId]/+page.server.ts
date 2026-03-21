@@ -1,3 +1,4 @@
+import { EDITABLE_USER_ROLE_VALUES, type EditableUserRole } from '$lib/definitions/user';
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
@@ -63,7 +64,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!['admin', 'voter'].includes(role)) {
+		if (!EDITABLE_USER_ROLE_VALUES.includes(role as EditableUserRole)) {
 			return fail(400, {
 				action: 'updateAdmin',
 				success: false,
@@ -104,7 +105,7 @@ export const actions: Actions = {
 				email,
 				firstName,
 				lastName,
-				role: role as 'admin' | 'voter',
+				role: role as EditableUserRole,
 				updatedAt: new Date()
 			})
 			.where(and(eq(user.id, params.userId), eq(user.role, 'admin')));
