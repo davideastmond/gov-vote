@@ -155,8 +155,6 @@
 					error = 'We could not upload your ID photo. Please try again.';
 					return;
 				}
-			} else {
-				console.warn('ID photo upload skipped because PUBLIC_REQUIRE_VOTER_ID is set to false');
 			}
 
 			// expecting to get a token cookie set by the server, so we can just redirect to the ballot page
