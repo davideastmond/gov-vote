@@ -13,6 +13,7 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
 const nameValidator = z
 	.string()
+	.trim()
 	.min(1, 'Name is required')
 	.max(100, 'Name must be less than 100 characters');
 
@@ -57,9 +58,11 @@ export const POST: RequestHandler = async (event) => {
 	const firstName = formData.get('firstName');
 	const lastName = formData.get('lastName');
 
+	let parsedFirstName: string;
+	let parsedLastName: string;
 	try {
-		nameValidator.parse(firstName);
-		nameValidator.parse(lastName);
+		parsedFirstName = nameValidator.parse(firstName);
+		parsedLastName = nameValidator.parse(lastName);
 	} catch (error) {
 		return json(
 			{
@@ -136,8 +139,8 @@ export const POST: RequestHandler = async (event) => {
 				.update(voterIdPhoto)
 				.set({
 					photoUrl,
-					firstName: firstName as string,
-					lastName: lastName as string,
+					firstName: parsedFirstName,
+					lastName: parsedLastName,
 					updatedAt: now
 				})
 				.where(eq(voterIdPhoto.id, existingPhoto.id));
@@ -147,8 +150,8 @@ export const POST: RequestHandler = async (event) => {
 				userId: activeOrGeneratedCard.userId,
 				contestGroupId: activeOrGeneratedCard.contestGroupId,
 				photoUrl,
-				firstName: firstName as string,
-				lastName: lastName as string,
+				firstName: parsedFirstName,
+				lastName: parsedLastName,
 				createdAt: now,
 				updatedAt: now
 			});
