@@ -13,13 +13,12 @@ export const POST: RequestHandler = createAuthenticatedApiHandler({
 	requireAuth: true,
 	validator: batchCreatePollingStationValidator,
 	handler: async (data: unknown, event) => {
-		// Normalize payload to array format
-		const validatedEntries = Array.isArray(data) ? data : [data];
+		const validatedEntries = data as PollingStationEntry[];
 		const insertedPollingStationIds: string[] = [];
 		const insertedAddressIds: string[] = [];
 		const skippedPollingStationIds: string[] = [];
 
-		for (const entry of validatedEntries as PollingStationEntry[]) {
+		for (const entry of validatedEntries) {
 			const foundAddress = await findAddressByComponents({
 				streetAddress: entry.streetAddress,
 				city: entry.city,
