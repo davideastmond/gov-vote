@@ -50,8 +50,6 @@ export const POST: RequestHandler = async (event) => {
 		);
 	}
 
-	// firstName and lastName should be in the
-
 	const formData = await event.request.formData();
 	const idPhoto = formData.get('idPhoto');
 	const firstName = formData.get('firstName');
