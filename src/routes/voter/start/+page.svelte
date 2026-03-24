@@ -116,7 +116,7 @@
 			return;
 		}
 
-		if (!idPhotoFile) {
+		if (requireVoterID && !idPhotoFile) {
 			error = 'Please upload a photo of your ID before continuing.';
 			return;
 		}
@@ -140,7 +140,7 @@
 				return;
 			}
 
-			if (requireVoterID) {
+			if (requireVoterID && idPhotoFile) {
 				const idPhotoFormData = new FormData();
 				idPhotoFormData.set('idPhoto', idPhotoFile);
 				idPhotoFormData.set('firstName', firstName.trim());
@@ -236,6 +236,7 @@
 					/>
 				</div>
 
+				{#if requireVoterID}
 				<div class="flex flex-col gap-2">
 					<Label for="id-photo-input">Photo ID Upload</Label>
 					<Input
@@ -255,8 +256,9 @@
 						</p>
 					{/if}
 				</div>
+			{/if}
 
-				<Button type="submit" disabled={isLoading || !idPhotoFile} class="mt-1 w-full">
+			<Button type="submit" disabled={isLoading || (requireVoterID && !idPhotoFile)} class="mt-1 w-full">
 					{#if isLoading}
 						<span
 							class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
