@@ -6,16 +6,17 @@
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import type { ContestStatus } from '$lib/definitions/enums';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	function statusLabel(status: 'upcoming' | 'active' | 'closed') {
+	function statusLabel(status: ContestStatus) {
 		if (status === 'closed') return 'inactive';
 		return status;
 	}
 
-	function statusVariant(status: 'upcoming' | 'active' | 'closed') {
+	function statusVariant(status: ContestStatus) {
 		if (status === 'active') return 'secondary';
 		if (status === 'closed') return 'outline';
 		return 'outline';

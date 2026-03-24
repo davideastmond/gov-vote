@@ -1,25 +1,10 @@
+import type { ContestResult } from '$lib/definitions/contest-results';
 import { db } from '$lib/server/db';
 import { contest, contestItem, voterChoice } from '$lib/server/db/schema';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { error } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
-
-type ItemResult = {
-	contestItemId: string;
-	contestItemTitle: string;
-	contestItemType: 'candidate' | 'initiative' | 'other';
-	voteCount: number;
-	voteShare: number;
-};
-
-type ContestResult = {
-	contestId: string;
-	contestTitle: string;
-	contestStatus: 'upcoming' | 'active' | 'closed';
-	totalVotes: number;
-	items: ItemResult[];
-};
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { contestGroupId } = params;

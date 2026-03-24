@@ -1,3 +1,7 @@
+import {
+	VOTER_CARD_STATUS_FILTER_VALUES,
+	type VoterCardStatusFilter
+} from '$lib/definitions/enums';
 import { db } from '$lib/server/db';
 import {
 	address,
@@ -13,11 +17,9 @@ import { and, desc, eq, ilike, or } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 const PAGE_SIZE = 12;
-const STATUS_FILTERS = ['all', 'generated', 'active', 'inactive'] as const;
-type StatusFilter = (typeof STATUS_FILTERS)[number];
 
-function isStatusFilter(value: string): value is StatusFilter {
-	return STATUS_FILTERS.includes(value as StatusFilter);
+function isStatusFilter(value: string): value is VoterCardStatusFilter {
+	return VOTER_CARD_STATUS_FILTER_VALUES.includes(value as VoterCardStatusFilter);
 }
 
 export const load: PageServerLoad = async (event) => {
@@ -25,7 +27,7 @@ export const load: PageServerLoad = async (event) => {
 
 	const searchQuery = event.url.searchParams.get('q')?.trim() ?? '';
 	const selectedStatusParam = event.url.searchParams.get('status') ?? 'all';
-	const selectedStatus: StatusFilter = isStatusFilter(selectedStatusParam)
+	const selectedStatus: VoterCardStatusFilter = isStatusFilter(selectedStatusParam)
 		? selectedStatusParam
 		: 'all';
 	const pageParam = event.url.searchParams.get('page') ?? '1';
@@ -92,7 +94,7 @@ export const load: PageServerLoad = async (event) => {
 		voterCards,
 		searchQuery,
 		selectedStatus,
-		statusFilters: STATUS_FILTERS,
+		statusFilters: VOTER_CARD_STATUS_FILTER_VALUES,
 		currentPage: validatedPage,
 		totalPages,
 		totalCount

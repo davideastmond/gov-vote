@@ -3,16 +3,13 @@
 import { command } from '$app/server';
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
+import { extractValidationErrorsObject } from '$lib/server/utils/extract-validation-errors';
 import { createAdminValidator } from '$lib/validators/create-admin.validator';
 import bcrypt from 'bcrypt';
-import { z } from 'zod';
-type CreateAdminData = {
-	email: string;
-	firstName: string;
-	lastName: string;
-	password: string;
-	username: string;
-};
+import type { z } from 'zod';
+
+type CreateAdminData = z.infer<typeof createAdminValidator>;
+
 export const createAdminUser = command(
 	'unchecked',
 	async (data: CreateAdminData): Promise<{ errors: Record<string, string> } | void> => {
@@ -20,16 +17,25 @@ export const createAdminUser = command(
 		try {
 			createAdminValidator.parse(data);
 		} catch (error) {
-			if (error instanceof z.ZodError) {
-				console.error('Validation error:', error.issues);
-				const errors: Record<string, string> = {};
-				error.issues.forEach((issue) => {
-					if (issue.path.length > 0) {
-						errors[issue.path[0] as string] = issue.message;
-					}
-				});
-				return { errors };
-			}
+			return extractValidationErrorsObject(error);
+		}
+
+		// Make sure an admin user with the same email or username doesn't already exist
+		const existingAdmin = await db.query.user.findFirst({
+			where: (user, { or, eq }) => or(eq(user.email, data.email), eq(user.username, data.username))
+		});
+
+		if (existingAdmin) {
+			console.error(
+				'Admin user with this email or username already exists:',
+				data.email,
+				data.username
+			);
+			return {
+				errors: {
+					email: 'Operation failed: unable to create admin.'
+				}
+			};
 		}
 		const hashedPassword = await bcrypt.hash(data.password, 10);
 		try {

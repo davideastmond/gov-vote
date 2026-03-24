@@ -1,3 +1,4 @@
+import { VOTER_CARD_STATUS_VALUES, type VoterCardStatus } from '$lib/definitions/enums';
 import { db } from '$lib/server/db';
 import {
 	address,
@@ -117,7 +118,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const cardStatus = getString(formData, 'cardStatus');
 
-		if (!['generated', 'active', 'inactive'].includes(cardStatus)) {
+		if (![...VOTER_CARD_STATUS_VALUES].includes(cardStatus as VoterCardStatus)) {
 			return fail(400, {
 				action: 'updateStatus',
 				success: false,
@@ -147,7 +148,7 @@ export const actions: Actions = {
 		await db
 			.update(voterCard)
 			.set({
-				cardStatus: cardStatus as 'generated' | 'active' | 'inactive',
+				cardStatus: cardStatus as VoterCardStatus,
 				updatedAt: new Date()
 			})
 			.where(eq(voterCard.id, params.voterCardId));

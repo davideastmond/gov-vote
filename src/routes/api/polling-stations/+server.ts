@@ -1,91 +1,29 @@
 import { db } from '$lib/server/db';
 import { address, pollingStation } from '$lib/server/db/schema';
-import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
+import { createAuthenticatedApiHandler } from '$lib/server/utils/create-authenticated-api-handler';
+import { findAddressByComponents } from '$lib/server/utils/find-address-by-components';
 import {
 	batchCreatePollingStationValidator,
 	type PollingStationEntry
 } from '$lib/validators/create-polling-station.validator';
 import { json } from '@sveltejs/kit';
-import { z } from 'zod';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async (event) => {
-	try {
-		await adminAuthorizationGuard(event);
-	} catch (error) {
-		return json(
-			{
-				success: false,
-				error: 'Unauthorized',
-				message:
-					'You must be an authenticated admin user or provide valid authentication credentials to access this endpoint.',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 400 }
-		);
-	}
-
-	let parsedBody: unknown;
-	try {
-		parsedBody = await event.request.json();
-	} catch {
-		return json(
-			{
-				success: false,
-				error: 'Bad Request',
-				message: 'Request body must be valid JSON.'
-			},
-			{ status: 400 }
-		);
-	}
-
-	const normalizedPayload = Array.isArray(parsedBody) ? parsedBody : [parsedBody];
-
-	let validatedEntries: PollingStationEntry[];
-	try {
-		validatedEntries = batchCreatePollingStationValidator.parse(normalizedPayload);
-	} catch (err) {
-		if (err instanceof z.ZodError) {
-			const errors = err.issues.map((issue) => {
-				const path = issue.path.join('.');
-				return `${path || 'Root'}: ${issue.message}`;
-			});
-
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Invalid request data',
-					details: errors
-				},
-				{ status: 400 }
-			);
-		}
-
-		return json(
-			{
-				success: false,
-				error: 'Bad Request',
-				message: 'Invalid request data'
-			},
-			{ status: 400 }
-		);
-	}
-
-	try {
+export const POST: RequestHandler = createAuthenticatedApiHandler({
+	requireAuth: true,
+	validator: batchCreatePollingStationValidator,
+	handler: async (data: unknown, event) => {
+		const validatedEntries = data as PollingStationEntry[];
 		const insertedPollingStationIds: string[] = [];
 		const insertedAddressIds: string[] = [];
 		const skippedPollingStationIds: string[] = [];
 
 		for (const entry of validatedEntries) {
-			const foundAddress = await db.query.address.findFirst({
-				where: (addr, { and, eq }) =>
-					and(
-						eq(addr.streetAddress, entry.streetAddress),
-						eq(addr.city, entry.city),
-						eq(addr.state, entry.state),
-						eq(addr.zipCode, entry.zipCode)
-					)
+			const foundAddress = await findAddressByComponents({
+				streetAddress: entry.streetAddress,
+				city: entry.city,
+				state: entry.state,
+				zipCode: entry.zipCode
 			});
 
 			const addressId = foundAddress?.id ?? crypto.randomUUID();
@@ -131,16 +69,5 @@ export const POST: RequestHandler = async (event) => {
 			},
 			{ status: 201 }
 		);
-	} catch (error) {
-		console.error('Error creating polling stations:', error);
-		return json(
-			{
-				success: false,
-				error: 'Internal Server Error',
-				message: 'An error occurred while creating polling stations.',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 500 }
-		);
 	}
-};
+});

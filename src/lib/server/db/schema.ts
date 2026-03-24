@@ -1,19 +1,16 @@
+import {
+	CONTEST_ITEM_TYPE_VALUES,
+	CONTEST_STATUS_VALUES,
+	VOTER_CARD_STATUS_VALUES
+} from '$lib/definitions/enums';
 import { boolean, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['admin', 'voter', 'super_admin']);
-export const contestItemTypeEnum = pgEnum('contest_item_type', [
-	'candidate',
-	'initiative',
-	'other'
-]);
-export const contestStatusEnum = pgEnum('contest_status', ['upcoming', 'active', 'closed']);
+export const contestItemTypeEnum = pgEnum('contest_item_type', [...CONTEST_ITEM_TYPE_VALUES]);
+export const contestStatusEnum = pgEnum('contest_status', [...CONTEST_STATUS_VALUES]);
 
-export const cardStatusState = pgEnum('card_status', ['generated', 'active', 'inactive']);
-export const contestGroupStatusEnum = pgEnum('contest_group_status', [
-	'upcoming',
-	'active',
-	'closed'
-]);
+export const cardStatusState = pgEnum('card_status', [...VOTER_CARD_STATUS_VALUES]);
+export const contestGroupStatusEnum = pgEnum('contest_group_status', [...CONTEST_STATUS_VALUES]);
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -183,6 +180,8 @@ export const voterIdPhoto = pgTable('voter_id_photo', {
 		.notNull()
 		.references(() => contestGroup.id, { onDelete: 'cascade' }),
 	photoUrl: text('photo_url').notNull(), // This is the URL of the ID photo stored in cloud storage
+	firstName: text('first_name'),
+	lastName: text('last_name'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });

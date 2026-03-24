@@ -1,15 +1,32 @@
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
+import { apiBadRequest, apiInternalError } from '$lib/server/utils/api-response-helpers';
+import { extractValidationErrors } from '$lib/server/utils/extract-validation-errors';
 import { checkAuthToken, getAuthTokenFromHeader } from '$lib/server/utils/header-request';
 import { json } from '@sveltejs/kit';
 import bcrypt from 'bcrypt';
+import z from 'zod';
 import type { RequestHandler } from './$types';
 
 /**
- * POST endpoint to seed admin and voter users
+ * POST endpoint to seed users
  * Requires Authorization: Bearer <token> header
- * Creates one admin user and one voter user with sample data
+ * Creates users from request body array; id is generated server-side
  */
+
+const seedUserRequestValidator = z.object({
+	username: z.string().min(3, 'Username must be at least 3 characters long'),
+	email: z.email('Email must be a valid email address'),
+	password: z.string().min(8, 'Password must be at least 8 characters long'),
+	firstName: z.string().min(1, 'First name is required'),
+	lastName: z.string().min(1, 'Last name is required'),
+	role: z.enum(['admin', 'voter'], "Role must be either 'admin' or 'voter'")
+});
+
+const seedUsersRequestValidator = z
+	.array(seedUserRequestValidator)
+	.min(1, 'At least one user is required');
+
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const token = getAuthTokenFromHeader(request);
@@ -24,79 +41,51 @@ export const POST: RequestHandler = async ({ request }) => {
 			);
 		}
 
-		// Generate unique IDs for users
-		const adminId = crypto.randomUUID();
-		const superAdminId = crypto.randomUUID();
-		const voterId = crypto.randomUUID();
+		let parsedBody: unknown;
+		try {
+			parsedBody = await request.json();
+		} catch {
+			return apiBadRequest();
+		}
 
-		const adminPassword = bcrypt.hashSync('adminpassword', 10); // Hash the admin password
-		const voterPassword = bcrypt.hashSync('voterpassword', 10); // Hash the voter password
-		const superAdminPassword = bcrypt.hashSync('superadminpassword', 10); // Hash the super admin password
+		let validatedPayload: z.infer<typeof seedUsersRequestValidator>;
+		try {
+			validatedPayload = seedUsersRequestValidator.parse(parsedBody);
+		} catch (error) {
+			return json(extractValidationErrors(error), { status: 400 });
+		}
 
-		// Create admin user
-		const adminUser = await db
-			.insert(user)
-			.values({
-				id: adminId,
-				email: 'admin@example.com',
-				username: 'admin',
-				hashedPassword: adminPassword,
-				firstName: 'Admin',
-				lastName: 'User',
-				role: 'admin'
-			})
-			.returning();
+		const usersToCreate = await Promise.all(
+			validatedPayload.map(async (entry) => ({
+				id: crypto.randomUUID(),
+				email: entry.email,
+				username: entry.username,
+				hashedPassword: await bcrypt.hash(entry.password, 10),
+				firstName: entry.firstName,
+				lastName: entry.lastName,
+				role: entry.role
+			}))
+		);
 
-		// Create voter user
-		const voterUser = await db
-			.insert(user)
-			.values({
-				id: voterId,
-				email: 'voter@example.com',
-				username: 'voter',
-				hashedPassword: voterPassword,
-				firstName: 'Sample',
-				lastName: 'Voter',
-				role: 'voter'
-			})
-			.returning();
+		const createdUsers = await db.insert(user).values(usersToCreate).returning();
 
-		// Create super admin user
-		const superAdminUser = await db
-			.insert(user)
-			.values({
-				id: superAdminId,
-				email: 'superadmin@example.com',
-				username: 'superadmin',
-				hashedPassword: superAdminPassword,
-				firstName: 'Super',
-				lastName: 'Admin',
-				role: 'super_admin'
-			})
-			.returning();
+		const safeUsers = createdUsers.map(({ hashedPassword: _hidden, ...safeUser }) => safeUser);
 
 		return json(
 			{
 				success: true,
-				message: 'Successfully seeded admin, super admin, and voter users',
+				message: 'Successfully seeded users',
 				data: {
-					admin: adminUser[0],
-					superAdmin: superAdminUser[0],
-					voter: voterUser[0]
+					users: safeUsers
 				}
 			},
 			{ status: 201 }
 		);
 	} catch (error) {
 		console.error('Error seeding users:', error);
-
-		return json(
-			{
-				error: 'Internal Server Error',
-				message: 'Failed to seed users',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 500 }
+		return apiInternalError(
+			'Failed to seed users',
+			error instanceof Error ? error.message : 'Unknown error'
 		);
 	}
 };

@@ -2,15 +2,9 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import AuthNavComponent from '$lib/components/auth-nav-component/Auth-nav-component.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { theme } from '$lib/stores/theme';
-	import { onMount } from 'svelte';
 	import './layout.css';
 
 	let { children, data } = $props();
-
-	onMount(() => {
-		theme.init();
-	});
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>

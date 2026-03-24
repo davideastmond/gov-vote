@@ -1,75 +1,36 @@
 import { db } from '$lib/server/db';
 import { address, user, userAddress } from '$lib/server/db/schema';
-import { adminAuthorizationGuard } from '$lib/server/utils/admin-authorization-guard';
+import { createAuthenticatedApiHandler } from '$lib/server/utils/create-authenticated-api-handler';
+import { findAddressByComponents } from '$lib/server/utils/find-address-by-components';
 import {
 	batchCreateUserValidator,
 	type UserEntry
 } from '$lib/validators/batch-create-user.validator';
 import { json } from '@sveltejs/kit';
 import bcrypt from 'bcrypt';
-import { and, eq } from 'drizzle-orm';
-import z from 'zod';
+import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
-// POST request handler for creating new voter users in batch
-// The request body should contain an array of voter objects.
-
-// Authenticated users hitting this endpoint from within the web app don't need bearer token auth.
-// External clients (e.g. scripts, Postman) must provide a valid bearer token in the Authorization header as well as username and password in the headers for basic auth. This is to prevent abuse of the endpoint by unauthorized parties while still allowing internal use without extra friction.
-export const POST: RequestHandler = async (event) => {
-	// Security layer
-
-	try {
-		await adminAuthorizationGuard(event);
-	} catch (error) {
-		return json(
-			{
-				success: false,
-				error: 'Unauthorized',
-				message:
-					'You must be an authenticated admin user or provide valid authentication credentials to access this endpoint.',
-				details: error instanceof Error ? error.message : 'Unknown error'
-			},
-			{ status: 400 }
-		);
-	}
-	// Validation of request body
-	const requestBody: Array<UserEntry> = await event.request.json();
-	try {
-		batchCreateUserValidator.parse(requestBody);
-	} catch (err) {
-		if (err instanceof z.ZodError) {
-			const errors = err.issues.map((issue) => {
-				const path = issue.path.join('.');
-				return `${path || 'Root'}: ${issue.message}`;
-			});
-			return json(
-				{
-					success: false,
-					error: 'Bad Request',
-					message: 'Invalid request data',
-					details: errors
-				},
-				{ status: 400 }
-			);
-		}
-	}
-
-	try {
+export const POST: RequestHandler = createAuthenticatedApiHandler({
+	requireAuth: true,
+	validator: batchCreateUserValidator,
+	handler: async (requestBody: unknown, event) => {
 		const insertedUserIds: string[] = [];
 		const insertedAddressIds: string[] = [];
-		for await (const userEntry of requestBody) {
+		const userEntries = requestBody as UserEntry[];
+
+		for await (const userEntry of userEntries) {
+			const foundAddress = await findAddressByComponents({
+				streetAddress: userEntry.streetAddress,
+				city: userEntry.city,
+				state: userEntry.state,
+				zipCode: userEntry.zipCode
+			});
+
 			const userAddressData = await db
 				.select()
 				.from(address)
-				.where(
-					and(
-						eq(address.streetAddress, userEntry.streetAddress),
-						eq(address.city, userEntry.city),
-						eq(address.state, userEntry.state),
-						eq(address.zipCode, userEntry.zipCode)
-					)
-				)
+				.where(eq(address.id, foundAddress?.id ?? ''))
 				.leftJoin(userAddress, eq(address.id, userAddress.addressId))
 				.leftJoin(user, eq(userAddress.userId, user.id));
 
@@ -96,19 +57,8 @@ export const POST: RequestHandler = async (event) => {
 			},
 			{ status: 201 }
 		);
-	} catch (err) {
-		console.error('Error creating voters:', err);
-		return json(
-			{
-				success: false,
-				error: 'Internal Server Error',
-				message: 'An error occurred while creating voters.',
-				details: err instanceof Error ? err.message : 'Unknown error'
-			},
-			{ status: 500 }
-		);
 	}
-};
+});
 
 async function insertAddress(userEntry: UserEntry): Promise<string> {
 	const addressId = crypto.randomUUID();
@@ -144,10 +94,6 @@ async function insertUserAddress(userId: string, addressId: string): Promise<voi
 	});
 }
 
-/**
- * There is no address and no user. Create both and link them.
- * @param userEntry
- */
 async function insertAllNewData(
 	userEntry: UserEntry
 ): Promise<{ addressId: string; userId: string }> {

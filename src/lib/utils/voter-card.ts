@@ -1,4 +1,5 @@
-export type VoterCardStatus = 'generated' | 'active' | 'inactive';
+import type { ContestItemType, ContestStatus, VoterCardStatus } from '$lib/definitions/enums';
+export type { VoterCardStatus };
 
 export function getVoterCardFullName(firstName: string, lastName: string): string {
 	return `${firstName} ${lastName}`;
@@ -8,11 +9,11 @@ export type AggregatedContestDetails = {
 	id: string;
 	title: string;
 	description: string | null;
-	status: 'upcoming' | 'active' | 'closed';
+	status: ContestStatus;
 	contestItemId: string | null;
 	contestItemTitle: string | null;
 	contestItemAuxiliaryText: string | null;
-	contestItemType: 'candidate' | 'initiative' | 'other' | null;
+	contestItemType: ContestItemType | null;
 };
 export function getVoterCardFullAddress(
 	streetAddress: string | null,
