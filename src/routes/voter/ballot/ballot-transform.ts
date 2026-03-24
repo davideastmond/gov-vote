@@ -1,3 +1,5 @@
+import type { ContestItemType } from '$lib/definitions/enums';
+
 export type BallotRow = {
 	contest: {
 		id: string;
@@ -8,7 +10,7 @@ export type BallotRow = {
 		id: string;
 		title: string;
 		auxiliaryText: string | null;
-		contestItemType: 'candidate' | 'initiative' | 'other';
+		contestItemType: ContestItemType;
 	};
 };
 
@@ -16,7 +18,7 @@ export type BallotContestItem = {
 	id: string;
 	label: string;
 	description?: string;
-	type: 'candidate' | 'initiative' | 'other';
+	type: ContestItemType;
 };
 
 export type BallotContest = {

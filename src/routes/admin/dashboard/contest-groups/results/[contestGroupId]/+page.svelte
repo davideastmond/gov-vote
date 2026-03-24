@@ -9,6 +9,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
+	import type { ContestItemType, ContestStatus } from '$lib/definitions/enums';
 	import { arc, pie, quantize, scaleOrdinal } from 'd3';
 	import { interpolateRainbow } from 'd3-scale-chromatic';
 	import type { PieArcDatum } from 'd3-shape';
@@ -19,7 +20,7 @@
 		item: string;
 		votes: number;
 		share: number;
-		type: 'candidate' | 'initiative' | 'other';
+		type: ContestItemType;
 	};
 
 	const chartSize = 300;
@@ -43,7 +44,7 @@
 	function chartRows(
 		items: Array<{
 			contestItemTitle: string;
-			contestItemType: 'candidate' | 'initiative' | 'other';
+			contestItemType: ContestItemType;
 			voteCount: number;
 			voteShare: number;
 		}>
@@ -61,11 +62,11 @@
 		return scaleOrdinal(labels, quantize(interpolateRainbow, paletteSize));
 	}
 
-	function formatStatus(status: 'upcoming' | 'active' | 'closed') {
+	function formatStatus(status: ContestStatus) {
 		return status.charAt(0).toUpperCase() + status.slice(1);
 	}
 
-	function statusVariant(status: 'upcoming' | 'active' | 'closed') {
+	function statusVariant(status: ContestStatus) {
 		if (status === 'closed') return 'destructive' as const;
 		if (status === 'upcoming') return 'secondary' as const;
 		return 'default' as const;

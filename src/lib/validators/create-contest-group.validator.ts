@@ -1,3 +1,4 @@
+import { CONTEST_ITEM_TYPE_VALUES, CONTEST_STATUS_VALUES } from '$lib/definitions/enums';
 import { z } from 'zod';
 import { addressValidator } from './address.validator';
 
@@ -13,14 +14,14 @@ export const contestItemsValidator = z.object({
 	id: z.uuid(),
 	title: z.string().min(1, 'Contest item title is required'),
 	auxiliaryText: z.string().optional(),
-	contestItemType: z.enum(['candidate', 'initiative', 'other'])
+	contestItemType: z.enum(CONTEST_ITEM_TYPE_VALUES)
 });
 
 export const baseContestsValidator = z.object({
 	id: z.uuid(),
 	title: z.string().min(1, 'Contest title is required'),
 	description: z.string().optional(),
-	contestStatus: z.enum(['upcoming', 'active', 'closed']),
+	contestStatus: z.enum(CONTEST_STATUS_VALUES),
 	items: z.array(contestItemsValidator).min(1, 'At least one contest item is required')
 });
 export const contestsValidator = z

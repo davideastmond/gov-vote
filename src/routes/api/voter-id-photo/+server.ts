@@ -6,9 +6,16 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 import { and, eq, or } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
+import z from 'zod';
 
 const VOTER_ID_BUCKET = 'gv-voter-data';
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+
+const nameValidator = z
+	.string()
+	.trim()
+	.min(1, 'Name is required')
+	.max(100, 'Name must be less than 100 characters');
 
 function getFileExtension(file: File): string {
 	const extensionFromName = file.name.split('.').pop()?.toLowerCase();
@@ -46,6 +53,24 @@ export const POST: RequestHandler = async (event) => {
 
 	const formData = await event.request.formData();
 	const idPhoto = formData.get('idPhoto');
+	const firstName = formData.get('firstName');
+	const lastName = formData.get('lastName');
+
+	let parsedFirstName: string;
+	let parsedLastName: string;
+	try {
+		parsedFirstName = nameValidator.parse(firstName);
+		parsedLastName = nameValidator.parse(lastName);
+	} catch (error) {
+		return json(
+			{
+				success: false,
+				message:
+					'Validation error: first name and last name are required and must be less than 100 characters.'
+			},
+			{ status: 400 }
+		);
+	}
 
 	if (!(idPhoto instanceof File)) {
 		return json({ success: false, message: 'ID photo is required.' }, { status: 400 });
@@ -112,6 +137,8 @@ export const POST: RequestHandler = async (event) => {
 				.update(voterIdPhoto)
 				.set({
 					photoUrl,
+					firstName: parsedFirstName,
+					lastName: parsedLastName,
 					updatedAt: now
 				})
 				.where(eq(voterIdPhoto.id, existingPhoto.id));
@@ -121,6 +148,8 @@ export const POST: RequestHandler = async (event) => {
 				userId: activeOrGeneratedCard.userId,
 				contestGroupId: activeOrGeneratedCard.contestGroupId,
 				photoUrl,
+				firstName: parsedFirstName,
+				lastName: parsedLastName,
 				createdAt: now,
 				updatedAt: now
 			});

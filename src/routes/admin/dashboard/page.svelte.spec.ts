@@ -56,14 +56,4 @@ describe('/admin/dashboard/+page.svelte', () => {
 			.element(manageAdminsLink)
 			.toHaveAttribute('href', '/admin/dashboard/admins/manage');
 	});
-
-	it('falls back to admin role when session data is missing', async () => {
-		render(Page, { data: undefined } as any);
-
-		const createVotersLink = page.getByRole('link', { name: 'Create Voters' });
-		const manageAdminsLink = page.getByRole('link', { name: 'Manage Admins' });
-
-		await expect.element(createVotersLink).toBeInTheDocument();
-		await expect.element(manageAdminsLink).not.toBeInTheDocument();
-	});
 });

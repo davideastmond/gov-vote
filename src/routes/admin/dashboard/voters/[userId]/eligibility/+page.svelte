@@ -130,7 +130,10 @@
 				{:else}
 					<div class="space-y-3">
 						{#each data.validVoterCards as voterCardRow (voterCardRow.id)}
-							<div class="rounded-md border border-(--border-primary) p-3">
+							<a
+								href={`/admin/dashboard/voter-cards/manage/${voterCardRow.id}`}
+								class="block rounded-md border border-(--border-primary) p-3 transition hover:border-(--text-secondary) focus-visible:ring-2 focus-visible:ring-(--text-secondary) focus-visible:outline-none"
+							>
 								<div class="flex items-center justify-between gap-2">
 									<p class="text-sm font-semibold text-(--text-primary)">
 										{voterCardRow.contestGroupTitle}
@@ -144,7 +147,7 @@
 								<p class="mt-2 text-xs text-(--text-secondary)">
 									Contest Group ID: {voterCardRow.contestGroupId}
 								</p>
-							</div>
+							</a>
 						{/each}
 					</div>
 				{/if}
@@ -163,7 +166,9 @@
 				{:else}
 					<div class="space-y-3">
 						{#each eligibleContestGroups as group (group.id)}
-							<div class="rounded-md border border-(--border-primary) p-3">
+							<div
+								class={`rounded-md border border-(--border-primary) p-3 ${group.status === 'closed' ? 'opacity-50' : ''}`}
+							>
 								<p class="text-sm font-semibold text-(--text-primary)">{group.title}</p>
 								<p class="truncate font-mono text-xs text-(--text-secondary)">{group.id}</p>
 								<p class="mt-1 text-xs text-(--text-secondary)">
@@ -221,7 +226,9 @@
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{#each filteredContestGroups as group (group.id)}
 					<button type="button" class="text-left" onclick={() => openGroupModal(group)}>
-						<Card class="h-full transition hover:border-(--text-secondary)">
+						<Card
+							class={`h-full transition hover:border-(--text-secondary) ${group.status === 'closed' ? ' opacity-50' : ''}`}
+						>
 							<CardHeader class="space-y-2">
 								<div class="flex items-center justify-between gap-2">
 									<CardTitle class="text-base">{group.title}</CardTitle>
@@ -248,7 +255,7 @@
 	bind:this={modal}
 	oncancel={onDialogCancel}
 	onclick={onDialogClick}
-	class="w-full max-w-2xl rounded-lg border border-(--border-primary) bg-(--bg-primary) p-0 text-(--text-primary)"
+	class="w-full max-w-2xl rounded-lg border border-(--border-primary) bg-(--bg-primary) p-0 text-(--text-primary) lg:top-[5vh] lg:left-[30vw]"
 >
 	{#if selectedGroup}
 		<div class="bg-white p-6 dark:bg-black">

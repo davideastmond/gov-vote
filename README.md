@@ -41,6 +41,10 @@ It supports two primary experiences:
 
 ![Gov Vote admin manage admins](docs/screenshots/admin-manage-admins.png)
 
+### Contest Group Results page
+
+![Gov Vote contest group results](docs/screenshots/contest-group-results-page.png)
+
 ## Features
 
 - Role-aware experience for `admin`, `super_admin`, and `voter` users.
@@ -50,6 +54,7 @@ It supports two primary experiences:
 - Ballot UI with single and multi-select contest support.
 - Ballot submission validation and secure recording of voter choices.
 - Admin visibility into uploaded voter ID images (via authenticated proxy route).
+- Graphs and charts for contest group results analysis.
 
 ## Tech Stack
 

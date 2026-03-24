@@ -1,5 +1,5 @@
-export type ContestItemType = 'candidate' | 'initiative' | 'other';
-export type ContestStatus = 'upcoming' | 'active' | 'closed';
+import type { ContestItemType, ContestStatus } from './enums';
+export type { ContestItemType, ContestStatus };
 
 export type ContestItem = {
 	id: string;

@@ -106,7 +106,14 @@
 								<p class="text-sm text-[var(--text-secondary)]">{formatDate(admin.createdAt)}</p>
 							</div>
 							<div class="mt-auto flex gap-2 pt-3">
-								<Button size="sm" variant="outline" class="flex-1">Edit</Button>
+								<Button
+									size="sm"
+									variant="outline"
+									class="flex-1"
+									href={`/admin/dashboard/admins/manage/edit/${admin.id}`}
+								>
+									Edit
+								</Button>
 								<Button size="sm" variant="destructive" class="flex-1">Deactivate</Button>
 							</div>
 						</CardContent>

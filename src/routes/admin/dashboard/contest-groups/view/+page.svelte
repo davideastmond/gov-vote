@@ -5,11 +5,12 @@
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import type { ContestStatus } from '$lib/definitions/enums';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	let searchInput = $state(data.searchQuery);
+	let searchInput = $derived(data.searchQuery);
 
 	function handleSearch(e: Event) {
 		const form = (e.target as HTMLInputElement).form;
@@ -18,12 +19,12 @@
 		}
 	}
 
-	function formatStatus(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+	function formatStatus(status: ContestStatus | null | undefined) {
 		if (!status) return 'Not specified';
 		return status.charAt(0).toUpperCase() + status.slice(1);
 	}
 
-	function statusVariant(status: 'upcoming' | 'active' | 'closed' | null | undefined) {
+	function statusVariant(status: ContestStatus | null | undefined) {
 		if (status === 'closed') return 'destructive' as const;
 		if (status === 'upcoming') return 'secondary' as const;
 		return 'default' as const;
@@ -47,9 +48,14 @@
 						Search and manage contest groups ({data.totalCount} total)
 					</p>
 				</div>
-				<Button href="/admin/dashboard/contest-groups/create" variant="outline">
-					Create Contest Group
-				</Button>
+				<div class="flex flex-wrap gap-2">
+					<Button href="/admin/dashboard/contest-groups/create" variant="outline">
+						Create Contest Group
+					</Button>
+					<Button href="/admin/dashboard/contest-groups/create-batch" variant="outline">
+						Batch Create
+					</Button>
+				</div>
 			</div>
 		</header>
 

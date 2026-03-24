@@ -1,3 +1,9 @@
+import {
+	CONTEST_ITEM_TYPE_VALUES,
+	CONTEST_STATUS_VALUES,
+	type ContestItemType,
+	type ContestStatus
+} from '$lib/definitions/enums';
 import { db } from '$lib/server/db';
 import {
 	address,
@@ -7,6 +13,7 @@ import {
 	contestItem,
 	pollingStation
 } from '$lib/server/db/schema';
+import { findAddressByComponents } from '$lib/server/utils/find-address-by-components';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
 import { error, fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
@@ -120,7 +127,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const contestGroupStatus = getString(formData, 'contestGroupStatus');
 
-		if (!['upcoming', 'active', 'closed'].includes(contestGroupStatus)) {
+		if (![...CONTEST_STATUS_VALUES].includes(contestGroupStatus as ContestStatus)) {
 			return fail(400, {
 				action: 'updateGroupStatus',
 				success: false,
@@ -131,7 +138,7 @@ export const actions: Actions = {
 		await db
 			.update(contestGroup)
 			.set({
-				contestGroupStatus: contestGroupStatus as 'upcoming' | 'active' | 'closed',
+				contestGroupStatus: contestGroupStatus as ContestStatus,
 				updatedAt: new Date()
 			})
 			.where(eq(contestGroup.id, params.contestGroupId));
@@ -184,7 +191,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!['upcoming', 'active', 'closed'].includes(contestStatus)) {
+		if (![...CONTEST_STATUS_VALUES].includes(contestStatus as ContestStatus)) {
 			return fail(400, {
 				action: 'updateContestStatus',
 				success: false,
@@ -195,7 +202,7 @@ export const actions: Actions = {
 		await db
 			.update(contest)
 			.set({
-				contestStatus: contestStatus as 'upcoming' | 'active' | 'closed',
+				contestStatus: contestStatus as ContestStatus,
 				updatedAt: new Date()
 			})
 			.where(and(eq(contest.id, contestId), eq(contest.contestGroupId, params.contestGroupId)));
@@ -255,14 +262,11 @@ export const actions: Actions = {
 			});
 		}
 
-		const foundAddress = await db.query.address.findFirst({
-			where: (addr, { and, eq }) =>
-				and(
-					eq(addr.streetAddress, streetAddress),
-					eq(addr.city, city),
-					eq(addr.state, state),
-					eq(addr.zipCode, zipCode)
-				)
+		const foundAddress = await findAddressByComponents({
+			streetAddress,
+			city,
+			state,
+			zipCode
 		});
 
 		const addressId = foundAddress?.id ?? crypto.randomUUID();
@@ -396,7 +400,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!['candidate', 'initiative', 'other'].includes(contestItemType)) {
+		if (![...CONTEST_ITEM_TYPE_VALUES].includes(contestItemType as ContestItemType)) {
 			return fail(400, {
 				action: 'updateContestItem',
 				success: false,
@@ -422,7 +426,7 @@ export const actions: Actions = {
 			.set({
 				title,
 				auxiliaryText,
-				contestItemType: contestItemType as 'candidate' | 'initiative' | 'other',
+				contestItemType: contestItemType as ContestItemType,
 				updatedAt: new Date()
 			})
 			.where(and(eq(contestItem.id, contestItemId), eq(contestItem.contestId, contestId)));
@@ -451,7 +455,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!['candidate', 'initiative', 'other'].includes(contestItemType)) {
+		if (![...CONTEST_ITEM_TYPE_VALUES].includes(contestItemType as ContestItemType)) {
 			return fail(400, {
 				action: 'addContestItem',
 				success: false,
@@ -477,7 +481,7 @@ export const actions: Actions = {
 			contestId,
 			title,
 			auxiliaryText,
-			contestItemType: contestItemType as 'candidate' | 'initiative' | 'other'
+			contestItemType: contestItemType as ContestItemType
 		});
 
 		return {

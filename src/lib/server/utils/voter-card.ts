@@ -1,15 +1,12 @@
-import type { VoterCardStatus } from '$lib/utils/voter-card';
+import type { NullableAddressInput } from '$lib/definitions/address';
+import type { VoterCardStatus } from '$lib/definitions/enums';
 
-export type VoterCardBaseFields = {
+export type VoterCardBaseFields = NullableAddressInput & {
 	id: string;
 	cardNumber: string;
 	status: VoterCardStatus;
 	firstName: string;
 	lastName: string;
-	streetAddress: string | null;
-	city: string | null;
-	state: string | null;
-	zipCode: string | null;
 	contestGroupName: string;
 };
 
@@ -28,12 +25,8 @@ export type VoterCardDetailRow = VoterCardBaseFields & {
 	updatedAt: Date;
 };
 
-export type VoterCardListItem = VoterCardListRow;
-
-export type VoterCardDetail = VoterCardDetailRow;
-
-export function normalizeVoterCardListRows(rows: VoterCardListRow[]): VoterCardListItem[] {
-	const voterCardsById = new Map<string, VoterCardListItem>();
+export function normalizeVoterCardListRows(rows: VoterCardListRow[]): VoterCardListRow[] {
+	const voterCardsById = new Map<string, VoterCardListRow>();
 
 	for (const row of rows) {
 		const existing = voterCardsById.get(row.id);
@@ -53,10 +46,12 @@ export function normalizeVoterCardListRows(rows: VoterCardListRow[]): VoterCardL
 	return Array.from(voterCardsById.values());
 }
 
-export function normalizeVoterCardDetailRows(rows: VoterCardDetailRow[]): VoterCardDetail | null {
+export function normalizeVoterCardDetailRows(
+	rows: VoterCardDetailRow[]
+): VoterCardDetailRow | null {
 	if (!rows.length) return null;
 
-	const details: VoterCardDetail = { ...rows[0] };
+	const details: VoterCardDetailRow = { ...rows[0] };
 
 	if (!details.streetAddress) {
 		for (const row of rows) {

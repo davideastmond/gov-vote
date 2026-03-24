@@ -1,3 +1,4 @@
+import type { ContestStatus } from '$lib/definitions/enums';
 import { db } from '$lib/server/db';
 import {
 	adminContestGroup,
@@ -17,11 +18,11 @@ type ContestGroupContestRow = {
 	contestGroupId: string;
 	contestGroupTitle: string;
 	contestGroupDescription: string | null;
-	contestGroupStatus: 'upcoming' | 'active' | 'closed';
+	contestGroupStatus: ContestStatus;
 	contestId: string;
 	contestTitle: string;
 	contestDescription: string | null;
-	contestStatus: 'upcoming' | 'active' | 'closed';
+	contestStatus: ContestStatus;
 	pollingStationId: string | null;
 	pollingStationName: string | null;
 };
@@ -128,14 +129,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			id: string;
 			title: string;
 			description: string | null;
-			status: 'upcoming' | 'active' | 'closed';
+			status: ContestStatus;
 			pollingStationId: string | null;
 			pollingStationName: string | null;
 			contests: Array<{
 				id: string;
 				title: string;
 				description: string | null;
-				status: 'upcoming' | 'active' | 'closed';
+				status: ContestStatus;
 			}>;
 			selectedContestIds: string[];
 		}
