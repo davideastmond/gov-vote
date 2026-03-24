@@ -237,28 +237,32 @@
 				</div>
 
 				{#if requireVoterID}
-				<div class="flex flex-col gap-2">
-					<Label for="id-photo-input">Photo ID Upload</Label>
-					<Input
-						id="id-photo-input"
-						type="file"
-						accept="image/*"
-						onchange={handleIdPhotoInput}
-						disabled={isLoading}
-						required
-					/>
-					<p class="m-0 text-sm text-[var(--text-secondary)]">
-						Upload a photo of your government-issued ID. This is required to continue.
-					</p>
-					{#if idPhotoFile}
+					<div class="flex flex-col gap-2">
+						<Label for="id-photo-input">Photo ID Upload</Label>
+						<Input
+							id="id-photo-input"
+							type="file"
+							accept="image/*"
+							onchange={handleIdPhotoInput}
+							disabled={isLoading}
+							required
+						/>
 						<p class="m-0 text-sm text-[var(--text-secondary)]">
-							Selected file: {idPhotoFile.name}
+							Upload a photo of your government-issued ID. This is required to continue.
 						</p>
-					{/if}
-				</div>
-			{/if}
+						{#if idPhotoFile}
+							<p class="m-0 text-sm text-[var(--text-secondary)]">
+								Selected file: {idPhotoFile.name}
+							</p>
+						{/if}
+					</div>
+				{/if}
 
-			<Button type="submit" disabled={isLoading || (requireVoterID && !idPhotoFile)} class="mt-1 w-full">
+				<Button
+					type="submit"
+					disabled={isLoading || (requireVoterID && !idPhotoFile)}
+					class="mt-1 w-full"
+				>
 					{#if isLoading}
 						<span
 							class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
