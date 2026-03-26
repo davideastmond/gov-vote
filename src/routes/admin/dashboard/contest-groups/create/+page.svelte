@@ -66,7 +66,7 @@
 		availableAdmins.filter((admin) => selectedAdminIds.includes(admin.id))
 	);
 
-	const canContinue = $derived(() => {
+	const canContinue = $derived.by(() => {
 		if (currentStep === 1) {
 			return title.trim().length > 0;
 		}
