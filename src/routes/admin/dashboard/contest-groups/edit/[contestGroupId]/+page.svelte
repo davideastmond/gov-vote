@@ -40,6 +40,10 @@
 	function isGroupClosed() {
 		return data.contestGroup.contestGroupStatus === 'closed';
 	}
+
+	function isEditingDisabled() {
+		return isGroupClosed() || data.hasVotesEntered;
+	}
 </script>
 
 <svelte:head>
@@ -79,12 +83,22 @@
 			</Alert>
 		{/if}
 
+		{#if data.hasVotesEntered}
+			<Alert class="border-orange-500 text-orange-900">
+				<AlertTitle>Editing Locked After Votes</AlertTitle>
+				<AlertDescription>
+					At least one vote has been entered for this contest group, so contests and related
+					configuration can no longer be edited.
+				</AlertDescription>
+			</Alert>
+		{/if}
+
 		<Card>
 			<CardHeader>
 				<CardTitle>Contest Group Details</CardTitle>
 			</CardHeader>
-			<CardContent class={isGroupClosed() ? 'opacity-60' : ''}>
-				<fieldset disabled={isGroupClosed()}>
+			<CardContent class={isEditingDisabled() ? 'opacity-60' : ''}>
+				<fieldset disabled={isEditingDisabled()}>
 					<form method="POST" action="?/updateGroupDetails" class="space-y-4">
 						<div class="space-y-2">
 							<Label for="group-title">Title</Label>
@@ -121,6 +135,10 @@
 					<Label for="contest-group-status">Status</Label>
 					{#if data.contestGroup.contestGroupStatus === 'closed'}
 						<p class="text-sm text-(--text-secondary)">This contest group is currently closed.</p>
+					{:else if data.hasVotesEntered}
+						<p class="text-sm text-(--text-secondary)">
+							Status edits are disabled after votes have been entered.
+						</p>
 					{:else}
 						<div class="flex flex-wrap items-center gap-2">
 							<select
@@ -165,8 +183,8 @@
 			<CardHeader>
 				<CardTitle>Add Contest</CardTitle>
 			</CardHeader>
-			<CardContent class={isGroupClosed() ? 'opacity-60' : ''}>
-				<fieldset disabled={isGroupClosed()}>
+			<CardContent class={isEditingDisabled() ? 'opacity-60' : ''}>
+				<fieldset disabled={isEditingDisabled()}>
 					<form method="POST" action="?/addContest" class="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
 						<div class="space-y-2">
 							<Label for="new-contest-title">Contest title</Label>
@@ -188,8 +206,8 @@
 			<CardHeader>
 				<CardTitle>Polling Stations</CardTitle>
 			</CardHeader>
-			<CardContent class={`space-y-5 ${isGroupClosed() ? 'opacity-60' : ''}`}>
-				<fieldset disabled={isGroupClosed()}>
+			<CardContent class={`space-y-5 ${isEditingDisabled() ? 'opacity-60' : ''}`}>
+				<fieldset disabled={isEditingDisabled()}>
 					<div class="space-y-3">
 						<div class="flex items-center justify-between">
 							<h2 class="text-lg font-semibold text-(--text-primary)">Associated Stations</h2>
@@ -264,9 +282,9 @@
 			</CardContent>
 		</Card>
 
-		<section class={`space-y-4 ${isGroupClosed() ? 'opacity-60' : ''}`}>
+		<section class={`space-y-4 ${isEditingDisabled() ? 'opacity-60' : ''}`}>
 			<h2 class="text-2xl font-semibold text-(--text-primary)">Contests</h2>
-			<fieldset disabled={isGroupClosed()}>
+			<fieldset disabled={isEditingDisabled()}>
 				{#if data.contests.length === 0}
 					<Card>
 						<CardContent class="py-8 text-sm text-(--text-secondary)">
