@@ -16,7 +16,6 @@ export const load: PageServerLoad = async (event) => {
 	const searchQuery = event.url.searchParams.get('q') ?? '';
 	const pageParam = event.url.searchParams.get('page') ?? '1';
 	const page = Math.max(1, parseInt(pageParam, 10) || 1);
-	const offset = (page - 1) * ITEMS_PER_PAGE;
 
 	// Build search filter
 	let admins = await db
