@@ -27,7 +27,7 @@
 	<title>View Admins - Gov Vote</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
+<main class="min-h-[calc(100vh-8rem)] bg-(--bg-primary) px-6 py-8">
 	<div class="mx-auto w-full max-w-6xl">
 		<AdminNavToolbar
 			primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }}
@@ -36,8 +36,8 @@
 
 		<!-- Header -->
 		<header class="mb-8">
-			<h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">Edit Admins</h1>
-			<p class="text-[var(--text-secondary)]">
+			<h1 class="mb-2 text-3xl font-bold text-(--text-primary)">Edit Admins</h1>
+			<p class="text-(--text-secondary)">
 				Search and view admin accounts ({data.totalCount} total)
 			</p>
 		</header>
@@ -64,7 +64,7 @@
 						<Button type="submit" class="sm:mt-6">Search</Button>
 					</form>
 					{#if data.searchQuery}
-						<p class="mt-3 text-sm text-[var(--text-secondary)]">
+						<p class="mt-3 text-sm text-(--text-secondary)">
 							Found {data.totalCount} result{data.totalCount !== 1 ? 's' : ''} for "{data.searchQuery}"
 						</p>
 					{/if}
@@ -76,7 +76,7 @@
 		{#if data.admins.length === 0}
 			<Card>
 				<CardContent class="py-12 text-center">
-					<p class="text-[var(--text-secondary)]">
+					<p class="text-(--text-secondary)">
 						{data.searchQuery ? 'No admins found matching your search.' : 'No admins found.'}
 					</p>
 				</CardContent>
@@ -90,20 +90,20 @@
 						</CardHeader>
 						<CardContent class="flex flex-1 flex-col gap-3">
 							<div>
-								<p class="text-xs font-semibold text-[var(--text-secondary)]">USERNAME</p>
-								<p class="text-sm text-[var(--text-primary)]">{admin.username}</p>
+								<p class="text-xs font-semibold text-(--text-secondary)">USERNAME</p>
+								<p class="text-sm text-(--text-primary)">{admin.username}</p>
 							</div>
 							<div>
-								<p class="text-xs font-semibold text-[var(--text-secondary)]">EMAIL</p>
-								<p class="truncate text-sm text-[var(--text-primary)]">{admin.email}</p>
+								<p class="text-xs font-semibold text-(--text-secondary)">EMAIL</p>
+								<p class="truncate text-sm text-(--text-primary)">{admin.email}</p>
 							</div>
 							<div>
-								<p class="text-xs font-semibold text-[var(--text-secondary)]">ROLE</p>
-								<p class="text-sm text-[var(--text-primary)] capitalize">{admin.role}</p>
+								<p class="text-xs font-semibold text-(--text-secondary)">ROLE</p>
+								<p class="text-sm text-(--text-primary) capitalize">{admin.role}</p>
 							</div>
 							<div>
-								<p class="text-xs font-semibold text-[var(--text-secondary)]">CREATED</p>
-								<p class="text-sm text-[var(--text-secondary)]">{formatDate(admin.createdAt)}</p>
+								<p class="text-xs font-semibold text-(--text-secondary)">CREATED</p>
+								<p class="text-sm text-(--text-secondary)">{formatDate(admin.createdAt)}</p>
 							</div>
 							<div class="mt-auto flex gap-2 pt-3">
 								<Button
@@ -125,7 +125,7 @@
 			{#if data.totalPages > 1}
 				<Card>
 					<CardFooter class="flex flex-wrap items-center justify-between gap-3">
-						<div class="text-sm text-[var(--text-secondary)]">
+						<div class="text-sm text-(--text-secondary)">
 							Page {data.currentPage} of {data.totalPages}
 						</div>
 						<div class="flex flex-wrap gap-2">
@@ -154,7 +154,7 @@
 										{pageNum}
 									</Button>
 								{:else if pageNum === 2 && data.currentPage > 3}
-									<span class="px-2 py-1.5 text-[var(--text-secondary)]">…</span>
+									<span class="px-2 py-1.5 text-(--text-secondary)">…</span>
 								{/if}
 							{/each}
 
