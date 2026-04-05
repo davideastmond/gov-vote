@@ -34,7 +34,6 @@
 			secondary={{ label: 'Back to Manage Admins', href: '/admin/dashboard/admins/manage' }}
 		/>
 
-		<!-- Header -->
 		<header class="mb-8">
 			<h1 class="mb-2 text-3xl font-bold text-(--text-primary)">Edit Admins</h1>
 			<p class="text-(--text-secondary)">

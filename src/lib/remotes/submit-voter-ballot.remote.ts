@@ -86,7 +86,7 @@ export const submitVoterBallot = command(
 			if (!matchingEligibilityRecord) {
 				// This shouldn't happen.
 				console.error(
-					`No matching eligibility record found for contestId ${contestId} and voterCardCode ${voterCardCode}. This may indicate a potential security issue or a bug in the frontend code.`
+					`No matching eligibility record found for contestId ${contestId} and voterCardCode ${voterCardCode}.`
 				);
 				return {
 					success: false,
