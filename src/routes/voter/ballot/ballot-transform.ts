@@ -54,8 +54,8 @@ export function normalizeBallotRows(ballotData: BallotRow[]): BallotContest[] {
 		const contestEntry = groupedContests.get(contestId);
 		if (!contestEntry) continue;
 
-		const alreadyAdded = contestEntry.items.some((item) => item.id === row.contest_item.id);
-		if (!alreadyAdded) {
+		const isAlreadyAdded = contestEntry.items.some((item) => item.id === row.contest_item.id);
+		if (!isAlreadyAdded) {
 			contestEntry.items.push({
 				id: row.contest_item.id,
 				label: row.contest_item.title,
