@@ -96,7 +96,9 @@ export const load = (async ({ params, locals, url }) => {
 				firstName: e.firstName,
 				lastName: e.lastName,
 				username: e.username,
-				lastVotedAt: (e.lastVotedAt ?? new Date()) as Date,
+				// MAX(createdAt) is non-null for any user with at least one voterChoice row,
+				// which is guaranteed by the JOIN condition used to build this page.
+				lastVotedAt: e.lastVotedAt as Date,
 				contests: [],
 				voterIdPhoto: null
 			}

@@ -139,8 +139,20 @@ const openContestGroup = {
 	contestGroupStatus: 'open'
 };
 
-/** Wire up mockSelect to route call 1 -> count chain, call 2 -> paged chain.
- *  Optionally call 3 -> selections chain, call 4 -> photos chain. */
+/**
+ * Wires up the `mockSelect` call routing and all downstream mock chains for a single test run.
+ *
+ * The load function issues up to 4 `db.select()` calls in a fixed order:
+ *   1. COUNT DISTINCT (count query)
+ *   2. Paged distinct electors (groupBy / limit / offset)
+ *   3. Contest selections for the paged user IDs (only when pagedRows is non-empty)
+ *   4. Voter-ID photos for the paged user IDs (only when pagedRows is non-empty)
+ *
+ * IMPORTANT: `mockSelect.mockReset()` is called at the start to discard any unconsumed
+ * `mockReturnValueOnce` entries left over from tests that threw before reaching the DB
+ * queries. Without this reset, `vi.clearAllMocks()` in `beforeEach` does NOT clear the
+ * once-return queue, causing the wrong chain to be returned in subsequent tests.
+ */
 function setupSelectChains({
 	totalElectors = 0,
 	pagedRows = [] as unknown[],
