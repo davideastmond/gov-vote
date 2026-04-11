@@ -129,7 +129,11 @@ export const load = (async ({ params, locals, url }) => {
 
 			let contestSummary = elector.contests.find((entry) => entry.contestId === row.contestId);
 			if (!contestSummary) {
-				contestSummary = { contestId: row.contestId, contestTitle: row.contestTitle, selections: [] };
+				contestSummary = {
+					contestId: row.contestId,
+					contestTitle: row.contestTitle,
+					selections: []
+				};
 				elector.contests.push(contestSummary);
 			}
 			contestSummary.selections.push(row.contestItemTitle);
@@ -144,7 +148,10 @@ export const load = (async ({ params, locals, url }) => {
 			})
 			.from(voterIdPhoto)
 			.where(
-				and(eq(voterIdPhoto.contestGroupId, contestGroupId), inArray(voterIdPhoto.userId, pagedUserIds))
+				and(
+					eq(voterIdPhoto.contestGroupId, contestGroupId),
+					inArray(voterIdPhoto.userId, pagedUserIds)
+				)
 			)
 			.orderBy(desc(voterIdPhoto.updatedAt));
 
