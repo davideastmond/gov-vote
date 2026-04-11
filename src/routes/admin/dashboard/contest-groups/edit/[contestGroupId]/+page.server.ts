@@ -11,7 +11,8 @@ import {
 	contestGroup,
 	contestGroupPollingStation,
 	contestItem,
-	pollingStation
+	pollingStation,
+	voterChoice
 } from '$lib/server/db/schema';
 import { findAddressByComponents } from '$lib/server/utils/find-address-by-components';
 import { requireAdminSession } from '$lib/server/utils/require-admin-session';
@@ -25,6 +26,31 @@ async function assertAdmin(locals: App.Locals) {
 
 function getString(formData: FormData, field: string) {
 	return String(formData.get(field) ?? '').trim();
+}
+
+async function hasVotesEnteredForContestGroup(contestGroupId: string) {
+	const votes = await db
+		.select({ id: voterChoice.id })
+		.from(voterChoice)
+		.innerJoin(contest, eq(contest.id, voterChoice.contestId))
+		.where(eq(contest.contestGroupId, contestGroupId))
+		.limit(1);
+
+	return votes.length > 0;
+}
+
+async function guardContestGroupEditing(action: string, contestGroupId: string) {
+	const hasVotesEntered = await hasVotesEnteredForContestGroup(contestGroupId);
+
+	if (!hasVotesEntered) {
+		return null;
+	}
+
+	return fail(409, {
+		action,
+		success: false,
+		message: 'Editing is disabled because votes have already been entered for this contest group.'
+	});
 }
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -82,16 +108,27 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.innerJoin(address, eq(address.id, pollingStation.addressId))
 		.where(eq(contestGroupPollingStation.contestGroupId, params.contestGroupId));
 
+	const hasVotesEntered = await hasVotesEnteredForContestGroup(params.contestGroupId);
+
 	return {
 		contestGroup: group,
 		contests: contestsWithItems,
-		pollingStations
+		pollingStations,
+		hasVotesEntered
 	};
 };
 
 export const actions: Actions = {
 	updateGroupDetails: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
+
+		const editingGuardFailure = await guardContestGroupEditing(
+			'updateGroupDetails',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
 
 		const formData = await request.formData();
 		const title = getString(formData, 'title');
@@ -123,6 +160,14 @@ export const actions: Actions = {
 
 	updateGroupStatus: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
+
+		const editingGuardFailure = await guardContestGroupEditing(
+			'updateGroupStatus',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
 
 		const formData = await request.formData();
 		const contestGroupStatus = getString(formData, 'contestGroupStatus');
@@ -179,6 +224,14 @@ export const actions: Actions = {
 	updateContestStatus: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
 
+		const editingGuardFailure = await guardContestGroupEditing(
+			'updateContestStatus',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
+
 		const formData = await request.formData();
 		const contestId = getString(formData, 'contestId');
 		const contestStatus = getString(formData, 'contestStatus');
@@ -217,6 +270,11 @@ export const actions: Actions = {
 	addContest: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
 
+		const editingGuardFailure = await guardContestGroupEditing('addContest', params.contestGroupId);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
+
 		const formData = await request.formData();
 		const title = getString(formData, 'title');
 		const description = getString(formData, 'description');
@@ -246,6 +304,14 @@ export const actions: Actions = {
 
 	addPollingStation: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
+
+		const editingGuardFailure = await guardContestGroupEditing(
+			'addPollingStation',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
 
 		const formData = await request.formData();
 		const name = getString(formData, 'name');
@@ -327,6 +393,14 @@ export const actions: Actions = {
 	deletePollingStation: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
 
+		const editingGuardFailure = await guardContestGroupEditing(
+			'deletePollingStation',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
+
 		const formData = await request.formData();
 		const associationId = getString(formData, 'associationId');
 
@@ -357,6 +431,14 @@ export const actions: Actions = {
 	renameContest: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
 
+		const editingGuardFailure = await guardContestGroupEditing(
+			'renameContest',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
+
 		const formData = await request.formData();
 		const contestId = getString(formData, 'contestId');
 		const title = getString(formData, 'title');
@@ -384,6 +466,14 @@ export const actions: Actions = {
 
 	updateContestItem: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
+
+		const editingGuardFailure = await guardContestGroupEditing(
+			'updateContestItem',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
 
 		const formData = await request.formData();
 		const contestId = getString(formData, 'contestId');
@@ -441,6 +531,14 @@ export const actions: Actions = {
 	addContestItem: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
 
+		const editingGuardFailure = await guardContestGroupEditing(
+			'addContestItem',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
+
 		const formData = await request.formData();
 		const contestId = getString(formData, 'contestId');
 		const title = getString(formData, 'title');
@@ -493,6 +591,14 @@ export const actions: Actions = {
 
 	deleteContestItem: async ({ request, params, locals }) => {
 		await assertAdmin(locals);
+
+		const editingGuardFailure = await guardContestGroupEditing(
+			'deleteContestItem',
+			params.contestGroupId
+		);
+		if (editingGuardFailure) {
+			return editingGuardFailure;
+		}
 
 		const formData = await request.formData();
 		const contestId = getString(formData, 'contestId');

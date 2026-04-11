@@ -318,7 +318,14 @@
 					<Alert variant="destructive">
 						<AlertTitle>Contest group is closed</AlertTitle>
 						<AlertDescription>
-							Eligibility updates are disabled because this contest group is inactive.
+							<p>Eligibility updates are disabled because this contest group is inactive.</p>
+							<Button
+								href={`/admin/dashboard/contest-groups/results/${selectedGroup.id}`}
+								variant="link"
+								class="mt-2 h-auto px-0"
+							>
+								View contest group results
+							</Button>
 						</AlertDescription>
 					</Alert>
 				{/if}

@@ -8,7 +8,6 @@ import {
 } from '$lib/validators/batch-create-user.validator';
 import { json } from '@sveltejs/kit';
 import bcrypt from 'bcrypt';
-import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = createAuthenticatedApiHandler({
@@ -19,7 +18,7 @@ export const POST: RequestHandler = createAuthenticatedApiHandler({
 		const insertedAddressIds: string[] = [];
 		const userEntries = requestBody as UserEntry[];
 
-		for await (const userEntry of userEntries) {
+		for (const userEntry of userEntries) {
 			const foundAddress = await findAddressByComponents({
 				streetAddress: userEntry.streetAddress,
 				city: userEntry.city,
@@ -27,25 +26,17 @@ export const POST: RequestHandler = createAuthenticatedApiHandler({
 				zipCode: userEntry.zipCode
 			});
 
-			const userAddressData = await db
-				.select()
-				.from(address)
-				.where(eq(address.id, foundAddress?.id ?? ''))
-				.leftJoin(userAddress, eq(address.id, userAddress.addressId))
-				.leftJoin(user, eq(userAddress.userId, user.id));
-
-			if (userAddressData.length === 0) {
+			if (!foundAddress) {
 				const { addressId, userId } = await insertAllNewData(userEntry);
 				insertedAddressIds.push(addressId);
 				insertedUserIds.push(userId);
-			} else {
-				// Address but no user - create user and link to existing address
-				if (userAddressData[0].address && !userAddressData[0].user) {
-					const userId = await insertUser(userEntry);
-					await insertUserAddress(userId, userAddressData[0].address.id);
-					insertedUserIds.push(userId);
-				}
+				continue;
 			}
+
+			// Address exists: always create a new user and link them to the existing address
+			const userId = await insertUser(userEntry);
+			await insertUserAddress(userId, foundAddress.id);
+			insertedUserIds.push(userId);
 		}
 		return json(
 			{

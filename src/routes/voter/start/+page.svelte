@@ -187,7 +187,7 @@
 		<CardContent>
 			<form on:submit={handleSubmit} class="flex flex-col gap-6">
 				<div class="flex flex-col gap-2">
-					<Label for="voter-id-input">Voter Card Code</Label>
+					<Label for="voter-id-input">Voter Card Code <span class="text-red-600">*</span></Label>
 					<Input
 						id="voter-id-input"
 						type="text"
@@ -209,28 +209,26 @@
 						</p>
 					{/if}
 				</div>
-
 				<div class="flex flex-col gap-2">
-					<Label for="first-name-input">First Name</Label>
-					<Input
-						id="first-name-input"
-						type="text"
-						placeholder="Enter your first name"
-						bind:value={firstName}
-						oninput={(e) => handleNameInput(e, 'firstName')}
-						disabled={isLoading}
-						required
-					/>
-				</div>
-
-				<div class="flex flex-col gap-2">
-					<Label for="last-name-input">Last Name</Label>
+					<Label for="last-name-input">Last Name <span class="text-red-600">*</span></Label>
 					<Input
 						id="last-name-input"
 						type="text"
 						placeholder="Enter your last name"
 						bind:value={lastName}
 						oninput={(e) => handleNameInput(e, 'lastName')}
+						disabled={isLoading}
+						required
+					/>
+				</div>
+				<div class="flex flex-col gap-2">
+					<Label for="first-name-input">First Name <span class="text-red-600">*</span></Label>
+					<Input
+						id="first-name-input"
+						type="text"
+						placeholder="Enter your first name"
+						bind:value={firstName}
+						oninput={(e) => handleNameInput(e, 'firstName')}
 						disabled={isLoading}
 						required
 					/>

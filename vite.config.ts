@@ -1,10 +1,10 @@
-import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vitest/config';
-import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
-
+import tailwindcss from '@tailwindcss/vite';
+import { playwright } from '@vitest/browser-playwright';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { defineConfig } from 'vitest/config';
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [tailwindcss(), sveltekit(), visualizer({ open: true })],
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

@@ -8,6 +8,7 @@ export async function findAddressByComponents({
 	zipCode
 }: AddressInput) {
 	return db.query.address.findFirst({
+		columns: { id: true },
 		where: (addr, { and, eq }) =>
 			and(
 				eq(addr.streetAddress, streetAddress),

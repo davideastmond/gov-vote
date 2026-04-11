@@ -2,8 +2,10 @@ import { browser } from '$app/environment';
 import type { Theme } from '$lib/definitions/enums';
 import { writable } from 'svelte/store';
 
-function createThemeStore() {
+export function createThemeStore() {
 	const applyTheme = (theme: Theme) => {
+		if (typeof document === 'undefined') return;
+
 		document.documentElement.classList.toggle('dark', theme === 'dark');
 		document.documentElement.style.colorScheme = theme;
 	};
@@ -12,10 +14,16 @@ function createThemeStore() {
 	const getInitialTheme = (): Theme => {
 		if (!browser) return 'light';
 
-		const stored = localStorage.getItem('theme') as Theme | null;
-		if (stored) return stored;
+		if (typeof localStorage !== 'undefined') {
+			const stored = localStorage.getItem('theme') as Theme | null;
+			if (stored === 'light' || stored === 'dark') return stored;
+		}
 
-		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		}
+
+		return 'light';
 	};
 
 	let currentTheme: Theme = getInitialTheme();
