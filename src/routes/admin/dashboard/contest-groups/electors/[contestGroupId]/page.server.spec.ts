@@ -173,7 +173,10 @@ describe('/admin/dashboard/contest-groups/electors/[contestGroupId]/+page.server
 	it('allows admin with access to view closed contest group', async () => {
 		mockRequireAdminSession.mockResolvedValue(adminSession);
 		mockQueryContestGroupFindFirst.mockResolvedValue(closedContestGroup);
-		mockQueryAdminContestGroupFindFirst.mockResolvedValue({ contestGroupId: 'test-group-id', adminId: 'admin-1' });
+		mockQueryAdminContestGroupFindFirst.mockResolvedValue({
+			contestGroupId: 'test-group-id',
+			adminId: 'admin-1'
+		});
 
 		const result = await load({
 			params: { contestGroupId: 'test-group-id' },

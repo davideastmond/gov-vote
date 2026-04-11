@@ -103,7 +103,9 @@
 				<p class="text-(--text-secondary)">{data.contestGroup.description}</p>
 			{/if}
 			<p class="text-sm text-(--text-secondary)">
-				Showing {data.pagination.totalElectors === 1 ? '1 elector' : `${data.pagination.totalElectors} electors`} with recorded votes in this contest group.
+				Showing {data.pagination.totalElectors === 1
+					? '1 elector'
+					: `${data.pagination.totalElectors} electors`} with recorded votes in this contest group.
 			</p>
 		</header>
 
