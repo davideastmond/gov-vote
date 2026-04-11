@@ -165,7 +165,7 @@ describe('/admin/dashboard/contest-groups/electors/[contestGroupId]/+page.svelte
 			})
 		});
 
-		const total = page.getByText(/1 electors with recorded votes/i);
+		const total = page.getByText(/1 elector with recorded votes/i);
 		await expect.element(total).toBeInTheDocument();
 	});
 });
