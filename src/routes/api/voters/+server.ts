@@ -8,7 +8,6 @@ import {
 } from '$lib/validators/batch-create-user.validator';
 import { json } from '@sveltejs/kit';
 import bcrypt from 'bcrypt';
-import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = createAuthenticatedApiHandler({
@@ -34,17 +33,10 @@ export const POST: RequestHandler = createAuthenticatedApiHandler({
 				continue;
 			}
 
-			const existingUserAddress = await db
-				.select({ userId: userAddress.userId })
-				.from(userAddress)
-				.where(eq(userAddress.addressId, foundAddress.id))
-				.limit(1);
-
-			if (existingUserAddress.length === 0) {
-				const userId = await insertUser(userEntry);
-				await insertUserAddress(userId, foundAddress.id);
-				insertedUserIds.push(userId);
-			}
+			// Address exists: always create a new user and link them to the existing address
+			const userId = await insertUser(userEntry);
+			await insertUserAddress(userId, foundAddress.id);
+			insertedUserIds.push(userId);
 		}
 		return json(
 			{

@@ -1,36 +1,83 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// ---- hoisted mocks ----
 const {
 	mockQueryContestGroupFindFirst,
 	mockQueryAdminContestGroupFindFirst,
 	mockRequireAdminSession,
 	mockSelect,
-	mockFrom,
-	mockInnerJoin1,
-	mockInnerJoin2,
-	mockInnerJoin3,
-	mockOrderBy,
-	mockWhere
+	// Count query chain: select -> from -> innerJoin (resolves)
+	mockCountInnerJoin,
+	mockCountFrom,
+	// Paged-users query chain: select -> from -> innerJoin -> innerJoin -> groupBy -> orderBy -> limit -> offset (resolves)
+	mockPagedOffset,
+	mockPagedLimit,
+	mockPagedOrderBy,
+	mockPagedGroupBy,
+	mockPagedInnerJoin2,
+	mockPagedInnerJoin1,
+	mockPagedFrom,
+	// Selections query chain: select -> from -> innerJoin -> innerJoin -> where -> orderBy (resolves)
+	mockSelOrderBy,
+	mockSelWhere,
+	mockSelInnerJoin2,
+	mockSelInnerJoin1,
+	mockSelFrom,
+	// Photos query chain: select -> from -> where -> orderBy (resolves)
+	mockPhotoOrderBy,
+	mockPhotoWhere,
+	mockPhotoFrom
 } = vi.hoisted(() => {
-	const mockOrderBy = vi.fn().mockResolvedValue([]);
-	const mockWhere = vi.fn(() => ({ orderBy: mockOrderBy }));
-	const mockInnerJoin3 = vi.fn(() => ({ orderBy: mockOrderBy }));
-	const mockInnerJoin2 = vi.fn(() => ({ innerJoin: mockInnerJoin3 }));
-	const mockInnerJoin1 = vi.fn(() => ({ innerJoin: mockInnerJoin2 }));
-	const mockFrom = vi.fn(() => ({ innerJoin: mockInnerJoin1, where: mockWhere }));
-	const mockSelect = vi.fn(() => ({ from: mockFrom }));
+	// Count query terminal
+	const mockCountInnerJoin = vi.fn().mockResolvedValue([{ totalElectors: 0 }]);
+	const mockCountFrom = vi.fn(() => ({ innerJoin: mockCountInnerJoin }));
+
+	// Paged-users query terminal
+	const mockPagedOffset = vi.fn().mockResolvedValue([]);
+	const mockPagedLimit = vi.fn(() => ({ offset: mockPagedOffset }));
+	const mockPagedOrderBy = vi.fn(() => ({ limit: mockPagedLimit }));
+	const mockPagedGroupBy = vi.fn(() => ({ orderBy: mockPagedOrderBy }));
+	const mockPagedInnerJoin2 = vi.fn(() => ({ groupBy: mockPagedGroupBy }));
+	const mockPagedInnerJoin1 = vi.fn(() => ({ innerJoin: mockPagedInnerJoin2 }));
+	const mockPagedFrom = vi.fn(() => ({ innerJoin: mockPagedInnerJoin1 }));
+
+	// Selections query terminal
+	const mockSelOrderBy = vi.fn().mockResolvedValue([]);
+	const mockSelWhere = vi.fn(() => ({ orderBy: mockSelOrderBy }));
+	const mockSelInnerJoin2 = vi.fn(() => ({ where: mockSelWhere }));
+	const mockSelInnerJoin1 = vi.fn(() => ({ innerJoin: mockSelInnerJoin2 }));
+	const mockSelFrom = vi.fn(() => ({ innerJoin: mockSelInnerJoin1 }));
+
+	// Photos query terminal
+	const mockPhotoOrderBy = vi.fn().mockResolvedValue([]);
+	const mockPhotoWhere = vi.fn(() => ({ orderBy: mockPhotoOrderBy }));
+	const mockPhotoFrom = vi.fn(() => ({ where: mockPhotoWhere }));
+
+	// Top-level select: routes each call to the right chain in order
+	const mockSelect = vi.fn();
 
 	return {
 		mockQueryContestGroupFindFirst: vi.fn(),
 		mockQueryAdminContestGroupFindFirst: vi.fn(),
 		mockRequireAdminSession: vi.fn(),
 		mockSelect,
-		mockFrom,
-		mockInnerJoin1,
-		mockInnerJoin2,
-		mockInnerJoin3,
-		mockOrderBy,
-		mockWhere
+		mockCountInnerJoin,
+		mockCountFrom,
+		mockPagedOffset,
+		mockPagedLimit,
+		mockPagedOrderBy,
+		mockPagedGroupBy,
+		mockPagedInnerJoin2,
+		mockPagedInnerJoin1,
+		mockPagedFrom,
+		mockSelOrderBy,
+		mockSelWhere,
+		mockSelInnerJoin2,
+		mockSelInnerJoin1,
+		mockSelFrom,
+		mockPhotoOrderBy,
+		mockPhotoWhere,
+		mockPhotoFrom
 	};
 });
 
@@ -59,12 +106,16 @@ vi.mock('$lib/server/utils/require-admin-session', () => ({
 vi.mock('drizzle-orm', () => ({
 	and: (...args: unknown[]) => ({ type: 'and', args }),
 	asc: (field: unknown) => ({ type: 'asc', field }),
+	countDistinct: (field: unknown) => ({ type: 'countDistinct', field }),
 	desc: (field: unknown) => ({ type: 'desc', field }),
 	eq: (...args: unknown[]) => ({ type: 'eq', args }),
-	inArray: (...args: unknown[]) => ({ type: 'inArray', args })
+	inArray: (...args: unknown[]) => ({ type: 'inArray', args }),
+	max: (field: unknown) => ({ type: 'max', field })
 }));
 
 import { load } from './+page.server';
+
+// ---- helpers ----
 
 const makeUrl = (search = '') =>
 	new URL(
@@ -88,16 +139,52 @@ const openContestGroup = {
 	contestGroupStatus: 'open'
 };
 
+/** Wire up mockSelect to route call 1 -> count chain, call 2 -> paged chain.
+ *  Optionally call 3 -> selections chain, call 4 -> photos chain. */
+function setupSelectChains({
+	totalElectors = 0,
+	pagedRows = [] as unknown[],
+	selectionRows = [] as unknown[],
+	photoRows = [] as unknown[]
+} = {}) {
+	// Wire up chain mocks (persistent default returns for each link in the chain)
+	mockCountFrom.mockReturnValue({ innerJoin: mockCountInnerJoin });
+	mockCountInnerJoin.mockResolvedValue([{ totalElectors }]);
+
+	mockPagedFrom.mockReturnValue({ innerJoin: mockPagedInnerJoin1 });
+	mockPagedInnerJoin1.mockReturnValue({ innerJoin: mockPagedInnerJoin2 });
+	mockPagedInnerJoin2.mockReturnValue({ groupBy: mockPagedGroupBy });
+	mockPagedGroupBy.mockReturnValue({ orderBy: mockPagedOrderBy });
+	mockPagedOrderBy.mockReturnValue({ limit: mockPagedLimit });
+	mockPagedLimit.mockReturnValue({ offset: mockPagedOffset });
+	mockPagedOffset.mockResolvedValue(pagedRows);
+
+	mockSelFrom.mockReturnValue({ innerJoin: mockSelInnerJoin1 });
+	mockSelInnerJoin1.mockReturnValue({ innerJoin: mockSelInnerJoin2 });
+	mockSelInnerJoin2.mockReturnValue({ where: mockSelWhere });
+	mockSelWhere.mockReturnValue({ orderBy: mockSelOrderBy });
+	mockSelOrderBy.mockResolvedValue(selectionRows);
+
+	mockPhotoFrom.mockReturnValue({ where: mockPhotoWhere });
+	mockPhotoWhere.mockReturnValue({ orderBy: mockPhotoOrderBy });
+	mockPhotoOrderBy.mockResolvedValue(photoRows);
+
+	// Reset mockSelect's once-queue before adding new entries so unconsumed
+	// values from tests that threw early do not bleed into subsequent tests.
+	mockSelect.mockReset();
+	mockSelect
+		.mockReturnValueOnce({ from: mockCountFrom }) // 1st call: count
+		.mockReturnValueOnce({ from: mockPagedFrom }) // 2nd call: paged users
+		.mockReturnValueOnce({ from: mockSelFrom }) // 3rd call: selections
+		.mockReturnValueOnce({ from: mockPhotoFrom }); // 4th call: photos
+}
+
+// ---- test suite ----
+
 describe('/admin/dashboard/contest-groups/electors/[contestGroupId]/+page.server.ts', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockSelect.mockReturnValue({ from: mockFrom });
-		mockFrom.mockReturnValue({ innerJoin: mockInnerJoin1, where: mockWhere });
-		mockInnerJoin1.mockReturnValue({ innerJoin: mockInnerJoin2 });
-		mockInnerJoin2.mockReturnValue({ innerJoin: mockInnerJoin3 });
-		mockInnerJoin3.mockReturnValue({ orderBy: mockOrderBy });
-		mockWhere.mockReturnValue({ orderBy: mockOrderBy });
-		mockOrderBy.mockResolvedValue([]);
+		setupSelectChains();
 	});
 
 	it('redirects to admin login when session is not present', async () => {
@@ -194,30 +281,31 @@ describe('/admin/dashboard/contest-groups/electors/[contestGroupId]/+page.server
 		mockRequireAdminSession.mockResolvedValue(superAdminSession);
 		mockQueryContestGroupFindFirst.mockResolvedValue(closedContestGroup);
 
-		const voteRows = [
+		const pagedRows = [
 			{
 				userId: 'user-1',
 				firstName: 'Alice',
 				lastName: 'Smith',
 				username: 'asmith',
+				lastVotedAt: new Date('2024-01-01T11:00:00Z')
+			}
+		];
+		const selectionRows = [
+			{
+				userId: 'user-1',
 				contestId: 'contest-1',
 				contestTitle: 'Mayor',
-				contestItemTitle: 'Candidate A',
-				createdAt: new Date('2024-01-01T10:00:00Z')
+				contestItemTitle: 'Candidate A'
 			},
 			{
 				userId: 'user-1',
-				firstName: 'Alice',
-				lastName: 'Smith',
-				username: 'asmith',
 				contestId: 'contest-2',
 				contestTitle: 'Council',
-				contestItemTitle: 'Candidate B',
-				createdAt: new Date('2024-01-01T11:00:00Z')
+				contestItemTitle: 'Candidate B'
 			}
 		];
 
-		mockOrderBy.mockResolvedValueOnce(voteRows).mockResolvedValueOnce([]);
+		setupSelectChains({ totalElectors: 1, pagedRows, selectionRows });
 
 		const result = await load({
 			params: { contestGroupId: 'test-group-id' },
@@ -243,19 +331,23 @@ describe('/admin/dashboard/contest-groups/electors/[contestGroupId]/+page.server
 		mockRequireAdminSession.mockResolvedValue(superAdminSession);
 		mockQueryContestGroupFindFirst.mockResolvedValue(closedContestGroup);
 
-		const voteRows = [
+		const pagedRows = [
 			{
 				userId: 'user-1',
 				firstName: 'Bob',
 				lastName: 'Jones',
 				username: 'bjones',
-				contestId: 'contest-1',
-				contestTitle: 'Mayor',
-				contestItemTitle: 'Candidate X',
-				createdAt: new Date('2024-01-01T10:00:00Z')
+				lastVotedAt: new Date('2024-01-01T10:00:00Z')
 			}
 		];
-
+		const selectionRows = [
+			{
+				userId: 'user-1',
+				contestId: 'contest-1',
+				contestTitle: 'Mayor',
+				contestItemTitle: 'Candidate X'
+			}
+		];
 		const photoRows = [
 			{
 				id: 'photo-1',
@@ -264,7 +356,7 @@ describe('/admin/dashboard/contest-groups/electors/[contestGroupId]/+page.server
 			}
 		];
 
-		mockOrderBy.mockResolvedValueOnce(voteRows).mockResolvedValueOnce(photoRows);
+		setupSelectChains({ totalElectors: 1, pagedRows, selectionRows, photoRows });
 
 		const result = await load({
 			params: { contestGroupId: 'test-group-id' },
@@ -282,18 +374,16 @@ describe('/admin/dashboard/contest-groups/electors/[contestGroupId]/+page.server
 		mockRequireAdminSession.mockResolvedValue(superAdminSession);
 		mockQueryContestGroupFindFirst.mockResolvedValue(closedContestGroup);
 
-		const voteRows = Array.from({ length: 15 }, (_, i) => ({
-			userId: `user-${i}`,
-			firstName: `First${i}`,
-			lastName: `Last${i}`,
-			username: `user${i}`,
-			contestId: 'contest-1',
-			contestTitle: 'Mayor',
-			contestItemTitle: 'Candidate A',
-			createdAt: new Date('2024-01-01T10:00:00Z')
+		// 15 total electors; page 2 has 5
+		const pagedRows = Array.from({ length: 5 }, (_, i) => ({
+			userId: `user-${i + 10}`,
+			firstName: `First${i + 10}`,
+			lastName: `Last${i + 10}`,
+			username: `user${i + 10}`,
+			lastVotedAt: new Date('2024-01-01T10:00:00Z')
 		}));
 
-		mockOrderBy.mockResolvedValueOnce(voteRows).mockResolvedValueOnce([]);
+		setupSelectChains({ totalElectors: 15, pagedRows });
 
 		const result = await load({
 			params: { contestGroupId: 'test-group-id' },
@@ -314,18 +404,15 @@ describe('/admin/dashboard/contest-groups/electors/[contestGroupId]/+page.server
 		mockRequireAdminSession.mockResolvedValue(superAdminSession);
 		mockQueryContestGroupFindFirst.mockResolvedValue(closedContestGroup);
 
-		const voteRows = Array.from({ length: 5 }, (_, i) => ({
+		const pagedRows = Array.from({ length: 5 }, (_, i) => ({
 			userId: `user-${i}`,
 			firstName: `First${i}`,
 			lastName: `Last${i}`,
 			username: `user${i}`,
-			contestId: 'contest-1',
-			contestTitle: 'Mayor',
-			contestItemTitle: 'Candidate A',
-			createdAt: new Date('2024-01-01T10:00:00Z')
+			lastVotedAt: new Date('2024-01-01T10:00:00Z')
 		}));
 
-		mockOrderBy.mockResolvedValueOnce(voteRows).mockResolvedValueOnce([]);
+		setupSelectChains({ totalElectors: 5, pagedRows });
 
 		const result = await load({
 			params: { contestGroupId: 'test-group-id' },

@@ -148,7 +148,7 @@
 						The contest group is closed and ready for election result calculation.
 					</p>
 					<a
-						href="/admin/dashboard/contest-groups/results/{contestGroupData[0]?.contestGroupId}"
+						href={`/admin/dashboard/contest-groups/results/${contestGroupData[0]?.contestGroupId}`}
 						class="w-full sm:w-auto"
 					>
 						<Button type="button">Calculate Results</Button>
@@ -165,7 +165,7 @@
 						View the elector list for this closed contest group.
 					</p>
 					<a
-						href="/admin/dashboard/contest-groups/electors/{contestGroupData[0]?.contestGroupId}"
+						href={`/admin/dashboard/contest-groups/electors/${contestGroupData[0]?.contestGroupId}`}
 						class="w-full sm:w-auto"
 					>
 						<Button type="button">View Electors</Button>
