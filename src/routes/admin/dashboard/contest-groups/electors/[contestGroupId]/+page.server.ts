@@ -25,7 +25,7 @@ type ElectorSummary = {
 	} | null;
 };
 
-export const load: PageServerLoad = async ({ params, locals, url }) => {
+export const load = (async ({ params, locals, url }) => {
 	const { contestGroupId } = params;
 	const session = await requireAdminSession(locals);
 	const rawPage = Number(url.searchParams.get('page') ?? '1');
@@ -164,4 +164,4 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			totalElectors
 		}
 	};
-};
+}) satisfies PageServerLoad;
