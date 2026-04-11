@@ -97,7 +97,7 @@
 	<title>{contestGroupData[0]?.contestGroupTitle || 'Contest Group'} - Admin Dashboard</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-8rem)] bg-[var(--bg-primary)] px-6 py-8">
+<main class="min-h-[calc(100vh-8rem)] bg-(--bg-primary) px-6 py-8">
 	<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
 		<AdminNavToolbar
 			primary={{ label: '← Back to Admin Dashboard', href: '/admin/dashboard' }}
@@ -107,11 +107,11 @@
 		<!-- Header -->
 		<div class="flex flex-wrap items-center justify-between gap-4">
 			<div>
-				<h1 class="text-3xl font-bold text-[var(--text-primary)]">
+				<h1 class="text-3xl font-bold text-(--text-primary)">
 					{contestGroupData[0]?.contestGroupTitle || 'Contest Group'}
 				</h1>
 				{#if contestGroupData[0]?.contestGroupDescription}
-					<p class="mt-1 text-[var(--text-secondary)]">
+					<p class="mt-1 text-(--text-secondary)">
 						{contestGroupData[0].contestGroupDescription}
 					</p>
 				{/if}
@@ -144,14 +144,31 @@
 					<CardTitle>Contest Group tabulation</CardTitle>
 				</CardHeader>
 				<CardContent class="flex flex-wrap items-center justify-between gap-3">
-					<p class="text-sm text-[var(--text-secondary)]">
+					<p class="text-sm text-(--text-secondary)">
 						The contest group is closed and ready for election result calculation.
 					</p>
 					<a
-						href="/admin/dashboard/contest-groups/results/{contestGroupData[0]?.contestGroupId}"
+						href={`/admin/dashboard/contest-groups/results/${contestGroupData[0]?.contestGroupId}`}
 						class="w-full sm:w-auto"
 					>
 						<Button type="button">Calculate Results</Button>
+					</a>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Electors</CardTitle>
+				</CardHeader>
+				<CardContent class="flex flex-wrap items-center justify-between gap-3">
+					<p class="text-sm text-(--text-secondary)">
+						View the elector list for this closed contest group.
+					</p>
+					<a
+						href={`/admin/dashboard/contest-groups/electors/${contestGroupData[0]?.contestGroupId}`}
+						class="w-full sm:w-auto"
+					>
+						<Button type="button">View Electors</Button>
 					</a>
 				</CardContent>
 			</Card>
@@ -168,50 +185,40 @@
 						{#each pollingStations as station}
 							<div class="space-y-3 rounded-md border p-3">
 								<section class="space-y-1">
-									<p
-										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
-									>
+									<p class="text-xs font-semibold tracking-wide text-(--text-secondary) uppercase">
 										Name
 									</p>
-									<p class="text-sm text-[var(--text-primary)]">
+									<p class="text-sm text-(--text-primary)">
 										{displayAttribute(station.name)}
 									</p>
 								</section>
 								<section class="space-y-1">
-									<p
-										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
-									>
+									<p class="text-xs font-semibold tracking-wide text-(--text-secondary) uppercase">
 										Street Address
 									</p>
-									<p class="text-sm text-[var(--text-primary)]">
+									<p class="text-sm text-(--text-primary)">
 										{displayAttribute(station.streetAddress)}
 									</p>
 								</section>
 								<section class="space-y-1">
-									<p
-										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
-									>
+									<p class="text-xs font-semibold tracking-wide text-(--text-secondary) uppercase">
 										City
 									</p>
-									<p class="text-sm text-[var(--text-primary)]">{displayAttribute(station.city)}</p>
+									<p class="text-sm text-(--text-primary)">{displayAttribute(station.city)}</p>
 								</section>
 								<section class="space-y-1">
-									<p
-										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
-									>
+									<p class="text-xs font-semibold tracking-wide text-(--text-secondary) uppercase">
 										State
 									</p>
-									<p class="text-sm text-[var(--text-primary)]">
+									<p class="text-sm text-(--text-primary)">
 										{displayAttribute(station.state)}
 									</p>
 								</section>
 								<section class="space-y-1">
-									<p
-										class="text-xs font-semibold tracking-wide text-[var(--text-secondary)] uppercase"
-									>
+									<p class="text-xs font-semibold tracking-wide text-(--text-secondary) uppercase">
 										Zip Code
 									</p>
-									<p class="text-sm text-[var(--text-primary)]">
+									<p class="text-sm text-(--text-primary)">
 										{displayAttribute(station.zipCode)}
 									</p>
 								</section>
@@ -219,7 +226,7 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="text-sm text-[var(--text-secondary)]">No polling stations configured.</p>
+					<p class="text-sm text-(--text-secondary)">No polling stations configured.</p>
 				{/if}
 			</CardContent>
 		</Card>
@@ -238,21 +245,21 @@
 									<Separator class="mb-6" />
 								{/if}
 								<div class="mb-1 flex items-center justify-between gap-3">
-									<h3 class="text-lg font-semibold text-[var(--text-primary)]">{contest.title}</h3>
+									<h3 class="text-lg font-semibold text-(--text-primary)">{contest.title}</h3>
 									<Badge variant={statusVariant(contest.status)} class="capitalize">
 										{formatStatus(contest.status)}
 									</Badge>
 								</div>
 								{#if contest.description}
-									<p class="mb-3 text-sm text-[var(--text-secondary)]">{contest.description}</p>
+									<p class="mb-3 text-sm text-(--text-secondary)">{contest.description}</p>
 								{/if}
 								<div class="space-y-2">
 									{#each contest.items as item}
 										<div class="flex items-center justify-between rounded-md border p-3">
 											<div>
-												<p class="font-medium text-[var(--text-primary)]">{item.title}</p>
+												<p class="font-medium text-(--text-primary)">{item.title}</p>
 												{#if item.auxiliaryText}
-													<p class="text-sm text-[var(--text-secondary)]">{item.auxiliaryText}</p>
+													<p class="text-sm text-(--text-secondary)">{item.auxiliaryText}</p>
 												{/if}
 											</div>
 											<Badge variant="secondary" class="capitalize">
@@ -265,7 +272,7 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="text-sm text-[var(--text-secondary)]">No contests configured.</p>
+					<p class="text-sm text-(--text-secondary)">No contests configured.</p>
 				{/if}
 			</CardContent>
 		</Card>

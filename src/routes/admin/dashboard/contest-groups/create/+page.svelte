@@ -37,8 +37,17 @@
 
 	let isSubmitting = $state(false);
 	let isSubmitted = $state(false);
+	let validationErrors = $state<Record<string, string>>({});
+	let submissionError = $state('');
 
 	const availableAdmins = await getAdmins();
+	const stepErrorFields: Record<number, string[]> = {
+		1: ['id', 'title', 'description'],
+		2: ['adminIds'],
+		3: ['contests'],
+		4: ['pollingStationAddresses'],
+		5: []
+	};
 
 	const filteredAdmins = $derived.by(() => {
 		const query = adminSearch.trim().toLowerCase();
@@ -57,12 +66,48 @@
 		availableAdmins.filter((admin) => selectedAdminIds.includes(admin.id))
 	);
 
-	const canContinue = $derived(() => {
+	const canContinue = $derived.by(() => {
 		if (currentStep === 1) {
 			return title.trim().length > 0;
 		}
 		return true;
 	});
+
+	const currentStepErrors = $derived.by(() => {
+		const fields = stepErrorFields[currentStep] ?? [];
+		return fields
+			.map((field) => validationErrors[field])
+			.filter((message): message is string => Boolean(message));
+	});
+
+	const reviewErrors = $derived.by(() => Object.entries(validationErrors));
+	const hasValidationErrors = $derived(reviewErrors.length > 0);
+
+	function clearValidationError(field: string) {
+		if (!(field in validationErrors)) return;
+		const nextErrors = { ...validationErrors };
+		delete nextErrors[field];
+		validationErrors = nextErrors;
+	}
+
+	function clearSubmissionFeedback(field?: string) {
+		submissionError = '';
+		isSubmitted = false;
+		if (field) {
+			clearValidationError(field);
+		}
+	}
+
+	function getFirstErroredStep(errors: Record<string, string>) {
+		for (const step of steps) {
+			const fields = stepErrorFields[step.id] ?? [];
+			if (fields.some((field) => field in errors)) {
+				return step.id;
+			}
+		}
+
+		return steps.at(-1)?.id ?? 1;
+	}
 
 	function goNext() {
 		if (!canContinue || currentStep >= steps.length) return;
@@ -75,6 +120,7 @@
 	}
 
 	function toggleAdmin(adminId: string) {
+		clearSubmissionFeedback('adminIds');
 		if (selectedAdminIds.includes(adminId)) {
 			selectedAdminIds = selectedAdminIds.filter((id) => id !== adminId);
 			return;
@@ -83,6 +129,7 @@
 	}
 
 	function addContest() {
+		clearSubmissionFeedback('contests');
 		contests = [
 			...contests,
 			{
@@ -100,6 +147,7 @@
 		field: 'title' | 'description' | 'contestStatus',
 		value: string | ContestStatus
 	) {
+		clearSubmissionFeedback('contests');
 		contests = contests.map((contest) => {
 			if (contest.id !== contestId) return contest;
 			if (field === 'contestStatus') {
@@ -110,10 +158,12 @@
 	}
 
 	function removeContest(contestId: string) {
+		clearSubmissionFeedback('contests');
 		contests = contests.filter((contest) => contest.id !== contestId);
 	}
 
 	function addContestItem(contestId: string) {
+		clearSubmissionFeedback('contests');
 		contests = contests.map((contest) => {
 			if (contest.id !== contestId) return contest;
 			const previousItemType = contest.items.at(-1)?.contestItemType ?? 'candidate';
@@ -138,6 +188,7 @@
 		field: 'title' | 'auxiliaryText' | 'contestItemType',
 		value: string
 	) {
+		clearSubmissionFeedback('contests');
 		contests = contests.map((contest) => {
 			if (contest.id !== contestId) return contest;
 			return {
@@ -150,6 +201,7 @@
 	}
 
 	function removeContestItem(contestId: string, itemId: string) {
+		clearSubmissionFeedback('contests');
 		contests = contests.map((contest) => {
 			if (contest.id !== contestId) return contest;
 			return {
@@ -160,6 +212,7 @@
 	}
 
 	function addPollingStationAddress() {
+		clearSubmissionFeedback('pollingStationAddresses');
 		pollingStationAddresses = [
 			...pollingStationAddresses,
 			{
@@ -178,19 +231,22 @@
 		field: keyof Omit<PollingStationAddress, 'id'>,
 		value: string
 	) {
+		clearSubmissionFeedback('pollingStationAddresses');
 		pollingStationAddresses = pollingStationAddresses.map((address) =>
 			address.id === addressId ? { ...address, [field]: value } : address
 		);
 	}
 
 	function removePollingStationAddress(addressId: string) {
+		clearSubmissionFeedback('pollingStationAddresses');
 		pollingStationAddresses = pollingStationAddresses.filter((address) => address.id !== addressId);
 	}
 
 	async function handleSubmit() {
 		isSubmitting = true;
-		isSubmitted = true;
-		isSubmitting = false;
+		isSubmitted = false;
+		submissionError = '';
+		validationErrors = {};
 
 		const submissionData = {
 			id: crypto.randomUUID(),
@@ -204,17 +260,21 @@
 		try {
 			const result = await createContestGroup(submissionData);
 			if (result && 'errors' in result) {
-				console.error('Submission errors:', result.errors);
+				validationErrors = result.errors;
+				currentStep = getFirstErroredStep(result.errors);
 				return;
 			}
 
 			if (result && 'contestGroupId' in result) {
-				console.log('Contest group created with ID:', result.contestGroupId);
-				// navigate to the contest group details page or reset the form for a new entry
+				isSubmitted = true;
 				await goto(`/admin/dashboard/contest-groups/view/${result.contestGroupId}`); // Navigate to the new contest group details page
+				return;
 			}
+
+			submissionError = 'Contest group could not be created. Please try again.';
 		} catch (error) {
 			console.error('Error submitting contest group:', error);
+			submissionError = 'Contest group could not be created. Please try again.';
 		} finally {
 			isSubmitting = false;
 		}
@@ -246,7 +306,7 @@
 			</p>
 		</header>
 
-		<Card>
+		<Card class={hasValidationErrors ? 'border-destructive shadow-sm shadow-destructive/10' : ''}>
 			<CardHeader class="gap-4">
 				<div class="flex flex-col gap-2">
 					<CardTitle>Setup Wizard</CardTitle>
@@ -290,6 +350,13 @@
 			<Separator />
 
 			<CardContent class="space-y-6">
+				{#if submissionError}
+					<Alert variant="destructive">
+						<AlertTitle>Submission failed</AlertTitle>
+						<AlertDescription>{submissionError}</AlertDescription>
+					</Alert>
+				{/if}
+
 				{#if currentStep === 1}
 					<section class="space-y-4">
 						<div>
@@ -300,6 +367,14 @@
 								Add a title and description for this contest group.
 							</p>
 						</div>
+						{#if currentStepErrors.length > 0}
+							<Alert variant="destructive">
+								<AlertTitle>Validation error</AlertTitle>
+								<AlertDescription>
+									{currentStepErrors[0]}
+								</AlertDescription>
+							</Alert>
+						{/if}
 						<div class="space-y-2">
 							<Label for="contest-group-title">Title</Label>
 							<Input
@@ -307,8 +382,12 @@
 								type="text"
 								placeholder="2024 General Election"
 								bind:value={title}
+								oninput={() => clearSubmissionFeedback('title')}
 								required
 							/>
+							{#if validationErrors.title}
+								<p class="text-sm text-destructive">{validationErrors.title}</p>
+							{/if}
 						</div>
 						<div class="space-y-2">
 							<Label for="contest-group-description">Description</Label>
@@ -318,6 +397,7 @@
 								class="min-h-[110px] w-full rounded-md border border-input bg-background px-3 py-2 text-base shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none md:text-sm"
 								placeholder="Add a short description about this contest group."
 								bind:value={description}
+								oninput={() => clearSubmissionFeedback('description')}
 							></textarea>
 						</div>
 					</section>
@@ -331,6 +411,14 @@
 								Search and assign admins who will manage this contest group.
 							</p>
 						</div>
+						{#if currentStepErrors.length > 0}
+							<Alert variant="destructive">
+								<AlertTitle>Validation error</AlertTitle>
+								<AlertDescription>
+									{currentStepErrors[0]}
+								</AlertDescription>
+							</Alert>
+						{/if}
 						<div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
 							<div class="space-y-3">
 								<div class="space-y-2">
@@ -415,6 +503,14 @@
 							</div>
 							<Button type="button" variant="outline" onclick={addContest}>Add Contest</Button>
 						</div>
+						{#if currentStepErrors.length > 0}
+							<Alert variant="destructive">
+								<AlertTitle>Contest validation failed</AlertTitle>
+								<AlertDescription>
+									{currentStepErrors[0]}
+								</AlertDescription>
+							</Alert>
+						{/if}
 						{#if contests.length === 0}
 							<Alert>
 								<AlertTitle>No contests added</AlertTitle>
@@ -595,6 +691,14 @@
 								Add Address
 							</Button>
 						</div>
+						{#if currentStepErrors.length > 0}
+							<Alert variant="destructive">
+								<AlertTitle>Polling station validation failed</AlertTitle>
+								<AlertDescription>
+									{currentStepErrors[0]}
+								</AlertDescription>
+							</Alert>
+						{/if}
 						{#if pollingStationAddresses.length === 0}
 							<Alert>
 								<AlertTitle>No addresses added</AlertTitle>
@@ -698,6 +802,18 @@
 								Review all selections before submitting.
 							</p>
 						</div>
+						{#if reviewErrors.length > 0}
+							<Alert variant="destructive">
+								<AlertTitle>Fix validation errors before submitting</AlertTitle>
+								<AlertDescription>
+									<ul class="list-disc space-y-1 pl-5">
+										{#each reviewErrors as [, message]}
+											<li>{message}</li>
+										{/each}
+									</ul>
+								</AlertDescription>
+							</Alert>
+						{/if}
 						<div class="grid gap-4 lg:grid-cols-2">
 							<Card>
 								<CardHeader>
